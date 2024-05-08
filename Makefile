@@ -3,8 +3,10 @@
 # Build the application
 all: build
 
+
 build:
 	@echo "Building..."
+	cd ./cmd/web && npm run css && cd ../.. 
 	@templ generate
 	@go build -o main cmd/api/main.go
 

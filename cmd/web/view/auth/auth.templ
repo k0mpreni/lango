@@ -1,0 +1,222 @@
+package auth
+
+import (
+	"lango/cmd/web/view/layout"
+	"github.com/nedpals/supabase-go"
+	"lango/cmd/web/view/ui/spinner"
+)
+
+templ EmailSent(email string) {
+	<div>An email has been sent to: <span class="text-semibold">{ email }</span></div>
+}
+
+templ CallbackScript() {
+	<script>
+	const url = window.location.href
+	const newUrl = url.replace("#", "?")
+	window.location = newUrl
+	</script>
+}
+
+/* ---- LOGIN ---- */
+
+templ Login() {
+	@layout.Layout(true) {
+		<div class="flex justify-center mt-[20vh]">
+			<div class="max-w-md w-full bg-base-300 p-10 rounded-xl ">
+				<h1 class="text-center font-semibold mb-10">Login into Lango</h1>
+				<div id="login-form">
+					@LoginForm(supabase.UserCredentials{}, LoginErrors{})
+				</div>
+			</div>
+		</div>
+	}
+}
+
+templ LoginMagicLinkForm(creds supabase.UserCredentials, errors LoginErrors) {
+	<form
+		hx-post="/login-magic-link"
+		hx-swap="outerHTML"
+	>
+		<div class="space-y-4 flex flex-col justify-center">
+			<label class="form-control w-full">
+				<div class="label">
+					<span class="label-text">Email</span>
+				</div>
+				<input type="email" name="email" value={ creds.Email } required placeholder="tutu@toto.com" class="input input-bordered w-full"/>
+				if len(errors.Email) > 0 {
+					<div class="label">
+						<span class="label-text-alt text-error">{ errors.Email }</span>
+					</div>
+				}
+			</label>
+		</div>
+		<div class="flex flex-col justify-center items-center w-full gap-4">
+			<button type="submit" class="btn btn-primary mt-10 w-full">
+				Login
+				@ui.Spinner()
+			</button>
+			<button hx-get="/login-other-methods" hx-swap="innerHTML" hx-target="#login-form" class="btn btn-link w-full">Back</button>
+		</div>
+	</form>
+}
+
+type LoginErrors struct {
+	Email              string
+	Password           string
+	InvalidCredentials string
+}
+
+templ LoginForm(creds supabase.UserCredentials, errors LoginErrors) {
+	<form hx-post="/login">
+		<div class="space-y-4 flex flex-col justify-center">
+			<label class="form-control w-full">
+				<div class="label">
+					<span class="label-text">Email</span>
+				</div>
+				<input type="email" name="email" value={ creds.Email } required placeholder="tutu@toto.com" class="input input-bordered w-full"/>
+				if len(errors.Email) > 0 {
+					<div class="label">
+						<span class="label-text-alt text-error">{ errors.Email }</span>
+					</div>
+				}
+			</label>
+			<label class="form-control w-full">
+				<div class="label">
+					<span class="label-text">Password</span>
+				</div>
+				<input type="password" name="password" required placeholder="password" class="input input-bordered w-full"/>
+				if len(errors.Password) > 0 {
+					<div class="label">
+						<span class="label-text-alt text-error">{ errors.Password }</span>
+					</div>
+				}
+				if len(errors.InvalidCredentials) > 0 {
+					<div class="label">
+						<span class="label-text-alt text-error">{ errors.InvalidCredentials }</span>
+					</div>
+				}
+			</label>
+		</div>
+		<div class="flex flex-col gap-4 w-full mt-8">
+			<button type="submit" class="w-full btn btn-primary">Login</button>
+			<a href="/signup" class="w-full btn btn-outline btn-secondary">Create an account</a>
+			<button hx-get="/login/password-reset" hx-swap="ineerHTML" hx-target="#login-form" class="btn btn-link w-full">Reset Password</button>
+		</div>
+		<div class="divider">OR</div>
+		<div class="flex flex-col gap-4">
+			<button hx-get="/login-magic-link" hx-swap="innerHTML" hx-target="#login-form" class="btn btn-outline w-full">Use Magic Link</button>
+			<a href="/login/provider/google" class="btn btn-outline w-full fill-neutral-content hover:fill-base-100">
+				Google
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512" class="w-4">
+					<!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
+					<path d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"></path>
+				</svg>
+			</a>
+		</div>
+	</form>
+}
+
+/* ---- SIGNUP ---- */
+
+templ SignUp() {
+	@layout.Layout(true) {
+		<div class="flex justify-center mt-[calc(100vh-80vh)]">
+			<div class="max-w-md w-full bg-base-300 p-10 rounded-xl ">
+				<h1 class="text-center font-semibold mb-10">Signup</h1>
+				<div id="signup-form">
+					@SignUpForm(SignupParams{}, SignUpErrors{})
+				</div>
+			</div>
+		</div>
+	}
+}
+
+type SignupParams struct {
+	Email           string
+	Password        string
+	ConfirmPassword string
+}
+
+type SignUpErrors struct {
+	Email           string
+	Password        string
+	ConfirmPassword string
+}
+
+templ SignUpForm(params SignupParams, errors SignUpErrors) {
+	<form
+		hx-post="/signup"
+	>
+		<div class="space-y-4 flex flex-col justify-center items-center">
+			<label class="form-control w-full">
+				<div class="label">
+					<span class="label-text">Email</span>
+				</div>
+				<input type="email" name="email" value={ params.Email } required placeholder="tutu@toto.com" class="input input-bordered w-full"/>
+				if len(errors.Email) > 0 {
+					<div class="label">
+						<span class="label-text-alt text-error">{ errors.Email }</span>
+					</div>
+				}
+			</label>
+			<label class="form-control w-full">
+				<div class="label">
+					<span class="label-text">Password</span>
+				</div>
+				<input type="password" name="password" required placeholder="password" class="input input-bordered w-full"/>
+				if len(errors.Password) > 0 {
+					<div class="label">
+						<span class="label-text-alt text-error">{ errors.Password }</span>
+					</div>
+				}
+			</label>
+			<label class="form-control w-full">
+				<div class="label">
+					<span class="label-text">Confirm Password</span>
+				</div>
+				<input type="password" name="confirmPassword" required placeholder="Confirm Password" class="input input-bordered w-full"/>
+				if len(errors.ConfirmPassword) > 0 {
+					<div class="label">
+						<span class="label-text-alt text-error">{ errors.ConfirmPassword }</span>
+					</div>
+				}
+			</label>
+		</div>
+		<div class="flex flex-col justify-center items-center w-full">
+			<button type="submit" class="btn btn-primary mt-10 w-full">Sign up</button>
+		</div>
+		// <div class="flex flex-col justify-center items-center mt-10">
+		// 	<button hx-get="/login-magic-link" hx-swap="innerHTML" hx-target="#signup-form" class="btn btn-outline btn-secondary">Use Magic Link</button>
+		// </div>
+		<div class="divider">OR</div>
+		<a href="/login" class="btn btn-outline w-full">You already have an account</a>
+	</form>
+}
+
+/* ---- RESET PASSWORD ---- */
+
+templ ResetPassword(errors LoginErrors) {
+	<form
+		hx-post="/login/password-reset"
+		hx-swap="outerHTML"
+	>
+		<div class="space-y-4 flex flex-col justify-center">
+			<label class="form-control w-full">
+				<div class="label">
+					<span class="label-text">Email</span>
+				</div>
+				<input type="email" name="email" required placeholder="chippies@email.com" class="input input-bordered w-full"/>
+				if len(errors.Email) > 0 {
+					<div class="label">
+						<span class="label-text-alt text-error">{ errors.Email }</span>
+					</div>
+				}
+			</label>
+		</div>
+		<div class="flex flex-col justify-center items-center w-full gap-4">
+			<button type="submit" class="btn btn-primary mt-10 w-full">Reset Password</button>
+			<a href="/login" class="btn btn-link w-full">Back</a>
+		</div>
+	</form>
+}

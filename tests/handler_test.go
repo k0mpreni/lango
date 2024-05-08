@@ -2,7 +2,7 @@ package tests
 
 import (
 	"io"
-	"langoai/internal/server"
+	"lango/internal/server"
 	"net/http"
 	"net/http/httptest"
 	"testing"

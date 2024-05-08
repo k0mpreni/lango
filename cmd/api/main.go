@@ -2,11 +2,10 @@ package main
 
 import (
 	"fmt"
-	"langoai/internal/server"
+	"lango/internal/server"
 )
 
 func main() {
-
 	server := server.NewServer()
 
 	err := server.ListenAndServe()

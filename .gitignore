@@ -27,3 +27,7 @@ tmp/
 
 # Project build
 main
+
+
+*_templ.go
+node_modules

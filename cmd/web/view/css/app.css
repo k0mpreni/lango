@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.htmx-indicator {
+  opacity: 0;
+  display: none;
+  transition: opacity 500ms ease-in;
+}
+.htmx-request .htmx-indicator {
+  display: block;
+  opacity: 1;
+}
+.htmx-request.htmx-indicator {
+  display: block;
+  opacity: 1;
+}

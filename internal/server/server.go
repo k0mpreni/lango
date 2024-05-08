@@ -2,28 +2,33 @@ package server
 
 import (
 	"fmt"
+	"lango/internal/database"
+	"lango/internal/supa"
 	"net/http"
 	"os"
 	"strconv"
 	"time"
 
 	_ "github.com/joho/godotenv/autoload"
-
-	"langoai/internal/database"
+	"github.com/nedpals/supabase-go"
 )
 
 type Server struct {
 	port int
 
 	db database.Service
+	sb *supabase.Client
 }
 
 func NewServer() *http.Server {
 	port, _ := strconv.Atoi(os.Getenv("PORT"))
+	if err := supa.Init(); err != nil {
+		fmt.Println("error init supabase client", err)
+	}
 	NewServer := &Server{
 		port: port,
-
-		db: database.New(),
+		db:   database.New(),
+		sb:   supa.Client,
 	}
 
 	// Declare Server config
@@ -34,6 +39,8 @@ func NewServer() *http.Server {
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
 	}
+
+	supa.Init()
 
 	return server
 }

@@ -5,24 +5,52 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/a-h/templ"
+	"lango/cmd/web"
+	"lango/cmd/web/handler"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"langoai/cmd/web"
 )
 
 func (s *Server) RegisterRoutes() http.Handler {
 	r := chi.NewRouter()
-	r.Use(middleware.Logger)
 
-	r.Get("/", s.HelloWorldHandler)
+	r.Use(middleware.Logger)
+	r.Use(handler.WithUser)
 
 	r.Get("/health", s.healthHandler)
 
 	fileServer := http.FileServer(http.FS(web.Files))
 	r.Handle("/assets/*", fileServer)
-	r.Get("/web", templ.Handler(web.HelloForm()).ServeHTTP)
-	r.Post("/hello", web.HelloWebHandler)
+
+	r.Get("/", handler.Make(handler.HomeHandler))
+
+	r.Get("/login", handler.Make(handler.LoginGetHandler))
+	r.Post("/login", handler.Make(handler.LoginPostHandler))
+
+	r.Get("/login/password-reset", handler.Make(handler.PasswordResetHandler))
+	r.Post("/login/password-reset", handler.Make(handler.PasswordResetPostHandler))
+
+	r.Get("/login/provider/google", handler.Make(handler.LoginWithGoogleHandler))
+	r.Get("/login-other-methods", handler.Make(handler.LoginOtherMethodsHandler))
+
+	r.Get("/login-magic-link", handler.Make(handler.MagicLinkGetHandler))
+	r.Post("/login-magic-link", handler.Make(handler.MagicLinkCreateHandler))
+
+	r.Get("/signup", handler.Make(handler.SignupGetHandler))
+	r.Post("/signup", handler.Make(handler.SignUpCreateHandler))
+	r.Post("/logout", handler.Make(handler.LogoutHandler))
+
+	r.Get("/auth/callback", handler.Make(handler.AuthCallbackHandler))
+
+	r.Get("/pricing", handler.Make(handler.HandlePricingIndex))
+
+	r.Group(func(chiRouter chi.Router) {
+		chiRouter.Use(handler.WithAuth)
+		chiRouter.Get("/account", handler.Make(handler.AccountHandler))
+		chiRouter.Put("/account", handler.Make(handler.AccountPutHandler))
+		chiRouter.Post("/account/delete", handler.Make(handler.AccountDeleteHandler))
+	})
 
 	return r
 }
