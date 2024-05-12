@@ -17,13 +17,14 @@ type AccountUser struct {
 }
 
 templ Index(user AccountUser) {
-	@layout.Layout(true)
-	<div class="flex flex-col items-center" id="account">
-		<div class="max-w-md w-full bg-base-300 p-10 rounded-xl mt-[10vh]">
-			<h1>Account settings</h1>
-			@AccountForm(user, AccountErrors{})
+	@layout.Layout(true) {
+		<div class="flex flex-col items-center" id="account">
+			<div class="max-w-md w-full bg-base-300 p-10 rounded-xl mt-[10vh]">
+				<h1>Account settings</h1>
+				@AccountForm(user, AccountErrors{})
+			</div>
 		</div>
-	</div>
+	}
 }
 
 templ AccountForm(user AccountUser, errors AccountErrors) {
@@ -68,8 +69,8 @@ templ AccountForm(user AccountUser, errors AccountErrors) {
 		</div>
 		<div class="flex flex-col gap-4 w-full mt-8">
 			<button type="submit" class="w-full btn btn-primary">Save</button>
-			<div class="divider">OR</div>
-			<button hx-post="/account/delete" hx-swap="innerHTML" hx-target="#account" class="w-full btn btn-outline">Delete account</button>
+			//		<div class="divider">OR</div>
+			//		<button hx-post="/account/delete" hx-swap="innerHTML" hx-target="#account" class="w-full btn btn-outline">Delete account</button>
 			<div id="update-success"></div>
 		</div>
 	</form>

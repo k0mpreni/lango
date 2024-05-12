@@ -1,13 +1,13 @@
 package layout
 
 import "lango/cmd/web/view/ui/navigation"
+import "lango/cmd/web/view/ui/footer"
 
 templ Layout(nav bool) {
 	<!DOCTYPE html>
 	<html lang="en" data-theme="dim">
 		<head>
 			<title>lango</title>
-			//
 			<link rel="icon" type="image/x-icon" href="/public/favicon.ico"/>
 			<meta charset="UTF-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -16,9 +16,10 @@ templ Layout(nav bool) {
 			<script src="assets/js/htmx.min.js"></script>
 			<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js"></script>
 		</head>
-		<body class="antialiased bg-base-200 h-screen" hx-boost="true">
+		<body class="antialiased bg-base-200" hx-boost="true">
 			@ui.Navigation()
 			{ children... }
+			@footer.Footer()
 		</body>
 	</html>
 }

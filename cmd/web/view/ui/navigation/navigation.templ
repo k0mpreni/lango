@@ -3,7 +3,7 @@ package ui
 import "lango/cmd/web/view"
 
 templ Navigation() {
-	<div class="navbar bg-base-100" hx-boost="true">
+	<div class="navbar bg-base-200" hx-boost="true">
 		<div class="flex-1">
 			<a class="h-auto btn btn-ghost text-xl" href="/" title="Home">
 				<img src="/assets/logo.png" class="w-12" alt="logo"/>
@@ -11,7 +11,7 @@ templ Navigation() {
 		</div>
 		<div class="flex-none">
 			<ul class="menu menu-horizontal px-1 z-[100]">
-				<li><a href="/pricing" title="Pricing">Pricing</a></li>
+				<li><a href="/#pricing" title="Pricing">Pricing</a></li>
 				if view.AuthenticatedUser(ctx).LoggedIn {
 					<li>
 						<details>
