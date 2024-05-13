@@ -56,3 +56,6 @@ clean up binary from the last build
 make clean
 ```
 
+## Made with HTMX
+
+![Made with HTMX](https://github.com/bigskysoftware/htmx/blob/master/www/static/img/createdwith.jpeg?raw=true)

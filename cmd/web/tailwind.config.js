@@ -6,6 +6,15 @@ module.exports = {
   },
   plugins: [require("daisyui")],
   daisyui: {
-    themes: ["dim"],
+    themes: [
+      {
+        dim: {
+          ...require("daisyui/src/theming/themes")["dim"],
+          // primary: "#a991f7",
+          primary: "#37cdbe",
+          accent: "#fbd231",
+        },
+      },
+    ],
   },
 };
