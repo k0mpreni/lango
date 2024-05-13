@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"lango/internal/supa"
 	"lango/internal/types"
 	"net/http"
@@ -22,6 +23,7 @@ func WithUser(next http.Handler) http.Handler {
 		store := sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY")))
 		session, err := store.Get(r, "user")
 		if err != nil {
+			fmt.Println("err getting session", err)
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -34,6 +36,7 @@ func WithUser(next http.Handler) http.Handler {
 
 		resp, err := supa.Client.Auth.User(r.Context(), accessToken.(string))
 		if err != nil {
+			fmt.Println("err auth user", err)
 			store := sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY")))
 			session, _ := store.Get(r, "user")
 			session.Values["accessToken"] = ""
