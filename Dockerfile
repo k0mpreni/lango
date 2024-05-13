@@ -7,7 +7,7 @@ RUN apk add --no-cache make nodejs npm ca-certificates
 RUN go install github.com/a-h/templ/cmd/templ@latest
 
 # Copy the source code into the container 
-COPY . .
+COPY ./ .
 
 
 RUN make install
