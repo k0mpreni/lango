@@ -17,7 +17,6 @@ RUN make build
 FROM scratch
 COPY --from=builder /app/main /
 # COPY .env .env
-COPY --from=builder /app/.env .env
 
 EXPOSE 8080
 ENTRYPOINT [ "./main" ]
