@@ -1,9 +1,10 @@
 {
-    "devDependencies": {
-        "daisyui": "4.10.5",
-        "tailwindcss": "3.4.1"
-    },
-    "scripts": {
-        "css": "tailwindcss -i view/css/app.css -o assets/css/styles.css"
-    }
+  "devDependencies": {
+    "daisyui": "4.10.5",
+    "tailwindcss": "3.4.1"
+  },
+  "scripts": {
+    "css": "npx tailwindcss -i view/css/app.css -o assets/css/styles.css"
+  }
 }
+

@@ -3,13 +3,14 @@ FROM golang:1.22-alpine as builder
 WORKDIR /app
 
 RUN apk add --no-cache make nodejs npm ca-certificates
-RUN npm i -G tailwindcss
-RUN npm i
 
 RUN go install github.com/a-h/templ/cmd/templ@latest
 
 # Copy the source code into the container 
 COPY . .
+
+
+RUN make install
 
 # Build the go application
 RUN make build

@@ -3,6 +3,9 @@
 # Build the application
 all: build
 
+install:
+	@echo "Installing..."
+	cd ./cmd/web && npm i && cd ../.. 
 
 build:
 	@echo "Building..."
