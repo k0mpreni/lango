@@ -14,12 +14,12 @@ RUN make install
 
 # Build the go application
 RUN make build
-# RUN > /app/.env
+RUN > /app/.env
 
 FROM scratch
 COPY --from=builder /app/main /
 COPY .env .env
-# COPY --from=builder /app/.env .env
+COPY --from=builder /app/.env .env
 
 EXPOSE 8080
 ENTRYPOINT [ "./main" ]
