@@ -4,7 +4,7 @@ import "lango/cmd/web/view/layout"
 import "lango/cmd/web/view/pricing"
 
 templ Home(plans []pricing.Plan) {
-	@layout.Layout(true) {
+	@layout.Base(true, "Homepage") {
 		<section class="py-10 sm:py-16 lg:py-24 mx-auto px-4 sm:px-6 lg:px-8 bg-base-200">
 			<div class="hero ">
 				<div class="hero-content flex-col lg:flex-row-reverse">
@@ -12,7 +12,7 @@ templ Home(plans []pricing.Plan) {
 						<div>
 							<p class="text-neutral-content font-semibold tracking-wider uppercase">A social media for learners</p>
 							<h1 class="mt-4 text-4xl font-bold text-neutral-content lg:mt-8 sm:text-6xl xl:text-8xl">Connect & learn from the experts</h1>
-							<a href="#" title="" class="inline-flex items-center px-6 py-4 mt-8 font-semibold text-black transition-all duration-200 bg-accent rounded-full lg:mt-16 hover:bg-accent-400 focus:bg-accent-400" role="button">
+							<a href="/login" title="" class="inline-flex items-center px-6 py-4 mt-8 font-semibold text-black transition-all duration-200 bg-accent rounded-full lg:mt-16 hover:bg-accent-400 focus:bg-accent-400" role="button">
 								<i class="fa-solid fa-rocket"></i>&nbsp;Get Chippies
 							</a>
 						</div>

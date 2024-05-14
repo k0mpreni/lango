@@ -2044,14 +2044,6 @@ html {
   margin-top: 2rem;
 }
 
-.mt-\[10vh\] {
-  margin-top: 10vh;
-}
-
-.mt-\[20vh\] {
-  margin-top: 20vh;
-}
-
 .mt-\[calc\(100vh-80vh\)\] {
   margin-top: calc(100vh - 80vh);
 }

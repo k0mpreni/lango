@@ -45,6 +45,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	r.Get("/pricing", handler.Make(handler.HandlePricingIndex))
 
+	// Protected Routes
 	r.Group(func(chiRouter chi.Router) {
 		chiRouter.Use(handler.WithAuth)
 		chiRouter.Get("/account", handler.Make(handler.AccountHandler))

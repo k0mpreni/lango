@@ -3,7 +3,7 @@ package auth
 import (
 	"lango/cmd/web/view/layout"
 	"github.com/nedpals/supabase-go"
-	"lango/cmd/web/view/ui/spinner"
+	"lango/cmd/web/view/partials"
 )
 
 templ EmailSent(email string) {
@@ -21,15 +21,17 @@ templ CallbackScript() {
 /* ---- LOGIN ---- */
 
 templ Login() {
-	@layout.Layout(true) {
-		<div class="flex justify-center mt-[20vh]">
-			<div class="max-w-md w-full bg-base-300 p-10 rounded-xl ">
-				<h1 class="text-center font-semibold mb-10">Login into Lango</h1>
-				<div id="login-form">
-					@LoginForm(supabase.UserCredentials{}, LoginErrors{})
+	@layout.Base(true, "Login") {
+		<section class="py-10 sm:py-16 lg:py-24 mx-auto px-4 sm:px-6 lg:px-8 bg-base-200">
+			<div class="flex justify-center">
+				<div class="max-w-md w-full bg-base-300 p-10 rounded-xl ">
+					<h1 class="text-center font-semibold mb-10">Login into Lango</h1>
+					<div id="login-form">
+						@LoginForm(supabase.UserCredentials{}, LoginErrors{})
+					</div>
 				</div>
 			</div>
-		</div>
+		</section>
 	}
 }
 
@@ -54,7 +56,7 @@ templ LoginMagicLinkForm(creds supabase.UserCredentials, errors LoginErrors) {
 		<div class="flex flex-col justify-center items-center w-full gap-4">
 			<button type="submit" class="btn btn-primary mt-10 w-full">
 				Login
-				@ui.Spinner()
+				@partials.Spinner()
 			</button>
 			<button hx-get="/login-other-methods" hx-swap="innerHTML" hx-target="#login-form" class="btn btn-link w-full">Back</button>
 		</div>
@@ -117,7 +119,7 @@ templ LoginForm(creds supabase.UserCredentials, errors LoginErrors) {
 /* ---- SIGNUP ---- */
 
 templ SignUp() {
-	@layout.Layout(true) {
+	@layout.Base(true, "Create an account") {
 		<div class="flex justify-center mt-[calc(100vh-80vh)]">
 			<div class="max-w-md w-full bg-base-300 p-10 rounded-xl ">
 				<h1 class="text-center font-semibold mb-10">Signup</h1>

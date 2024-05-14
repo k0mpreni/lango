@@ -17,13 +17,17 @@ type AccountUser struct {
 }
 
 templ Index(user AccountUser) {
-	@layout.Layout(true) {
-		<div class="flex flex-col items-center" id="account">
-			<div class="max-w-md w-full bg-base-300 p-10 rounded-xl mt-[10vh]">
-				<h1>Account settings</h1>
-				@AccountForm(user, AccountErrors{})
+	@layout.Base(true, "Account") {
+		<section class="py-10 sm:py-16 lg:py-24 mx-auto px-4 sm:px-6 lg:px-8 bg-base-200">
+			<div class="flex justify-center">
+				<div class="flex flex-col items-center" id="account">
+					<div class="max-w-md w-full bg-base-300 p-10 rounded-xl">
+						<h1>Account settings</h1>
+						@AccountForm(user, AccountErrors{})
+					</div>
+				</div>
 			</div>
-		</div>
+		</section>
 	}
 }
 
@@ -44,17 +48,17 @@ templ AccountForm(user AccountUser, errors AccountErrors) {
 					</div>
 				}
 			</label>
-			<label class="form-control w-full">
-				<div class="label">
-					<span class="label-text">Current Password</span>
-				</div>
-				<input type="password" name="currentPassword" required placeholder="Current password" class="input input-bordered w-full"/>
-				if len(errors.CurrentPassword) > 0 {
-					<div class="label">
-						<span class="label-text-alt text-error">{ errors.CurrentPassword }</span>
-					</div>
-				}
-			</label>
+			<!-- <label class="form-control w-full"> -->
+			<!-- 	<div class="label"> -->
+			<!-- 		<span class="label-text">Current Password</span> -->
+			<!-- 	</div> -->
+			<!-- 	<input type="password" name="currentPassword" required placeholder="Current password" class="input input-bordered w-full"/> -->
+			<!-- 	if len(errors.CurrentPassword) > 0 { -->
+			<!-- 		<div class="label"> -->
+			<!-- 			<span class="label-text-alt text-error">{ errors.CurrentPassword }</span> -->
+			<!-- 		</div> -->
+			<!-- 	} -->
+			<!-- </label> -->
 			<label class="form-control w-full">
 				<div class="label">
 					<span class="label-text">New Password</span>
