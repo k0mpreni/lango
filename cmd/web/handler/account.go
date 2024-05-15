@@ -6,8 +6,6 @@ import (
 	"lango/internal/supa"
 	"log/slog"
 	"net/http"
-
-	"github.com/badoux/checkmail"
 )
 
 // func HelloWebHandler(w http.ResponseWriter, r *http.Request) {
@@ -38,16 +36,16 @@ func AccountPutHandler(w http.ResponseWriter, r *http.Request) error {
 		NewPassword:     r.FormValue("newPassword"),
 	}
 
-	err := checkmail.ValidateFormat(params.Email)
-	if err != nil {
-		return render(
-			r,
-			w,
-			account.AccountForm(account.AccountUser{Email: params.Email}, account.AccountErrors{
-				Email: "Please enter a valid email",
-			}),
-		)
-	}
+	// err := checkmail.ValidateFormat(params.Email)
+	// if err != nil {
+	// 	return render(
+	// 		r,
+	// 		w,
+	// 		account.AccountForm(account.AccountUser{Email: params.Email}, account.AccountErrors{
+	// 			Email: "Please enter a valid email",
+	// 		}),
+	// 	)
+	// }
 
 	if len(params.NewPassword) < 8 {
 		return render(

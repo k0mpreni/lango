@@ -59,3 +59,7 @@ make clean
 ## Made with HTMX
 
 ![Made with HTMX](https://github.com/bigskysoftware/htmx/blob/master/www/static/img/createdwith.jpeg?raw=true)
+
+## Known bugs
+
+- When connecting with google, changing password, relog with google, it disconnects the user. Doesn't do this with credentials auth

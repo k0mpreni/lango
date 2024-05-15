@@ -58,7 +58,7 @@ templ LoginMagicLinkForm(creds supabase.UserCredentials, errors LoginErrors) {
 				Login
 				@partials.Spinner()
 			</button>
-			<button hx-get="/login-other-methods" hx-swap="innerHTML" hx-target="#login-form" class="btn btn-link w-full">Back</button>
+			<button hx-on:click="history.back()" hx-swap="innerHTML" hx-target="#login-form" class="btn btn-link w-full">Back</button>
 		</div>
 	</form>
 }
@@ -107,7 +107,7 @@ templ LoginForm(creds supabase.UserCredentials, errors LoginErrors) {
 		</div>
 		<div class="divider">OR</div>
 		<div class="flex flex-col gap-4">
-			<button hx-get="/login-magic-link" hx-swap="innerHTML" hx-target="#login-form" class="btn btn-outline w-full">Use Magic Link</button>
+			<button hx-get="/login-magic-link" hx-swap="innerHTML" hx-target="#login-form" hx-push-url="true" class="btn btn-outline w-full">Use Magic Link</button>
 			<a href="/login/provider/google" class="btn btn-outline w-full fill-neutral-content hover:fill-base-100">
 				Google
 				<i class="fa-brands fa-google"></i>
@@ -120,14 +120,16 @@ templ LoginForm(creds supabase.UserCredentials, errors LoginErrors) {
 
 templ SignUp() {
 	@layout.Base(true, "Create an account") {
-		<div class="flex justify-center mt-[calc(100vh-80vh)]">
-			<div class="max-w-md w-full bg-base-300 p-10 rounded-xl ">
-				<h1 class="text-center font-semibold mb-10">Signup</h1>
-				<div id="signup-form">
-					@SignUpForm(SignupParams{}, SignUpErrors{})
+		<section class="py-10 sm:py-16 lg:py-24 mx-auto px-4 sm:px-6 lg:px-8 bg-base-200">
+			<div class="flex justify-center">
+				<div class="max-w-md w-full bg-base-300 p-10 rounded-xl ">
+					<h1 class="text-center font-semibold mb-10">Signup</h1>
+					<div id="signup-form">
+						@SignUpForm(SignupParams{}, SignUpErrors{})
+					</div>
 				</div>
 			</div>
-		</div>
+		</section>
 	}
 }
 
@@ -185,11 +187,11 @@ templ SignUpForm(params SignupParams, errors SignUpErrors) {
 		<div class="flex flex-col justify-center items-center w-full">
 			<button type="submit" class="btn btn-primary mt-10 w-full">Sign up</button>
 		</div>
-		// <div class="flex flex-col justify-center items-center mt-10">
-		// 	<button hx-get="/login-magic-link" hx-swap="innerHTML" hx-target="#signup-form" class="btn btn-outline btn-secondary">Use Magic Link</button>
-		// </div>
 		<div class="divider">OR</div>
-		<a href="/login" class="btn btn-outline w-full">You already have an account</a>
+		<div class="flex flex-col gap-4">
+			<button hx-get="/login-magic-link" hx-push-url="true" hx-swap="innerHTML" hx-target="#signup-form" class="w-full btn btn-outline btn-secondary">Use Magic Link</button>
+			<a href="/login" class="btn btn-outline w-full">You already have an account</a>
+		</div>
 	</form>
 }
 

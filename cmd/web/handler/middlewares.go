@@ -22,6 +22,7 @@ func WithUser(next http.Handler) http.Handler {
 
 		store := sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY")))
 		session, err := store.Get(r, "user")
+		fmt.Println("session", session.Values["accessToken"])
 		if err != nil {
 			fmt.Println("err getting session", err)
 			next.ServeHTTP(w, r)
@@ -34,9 +35,12 @@ func WithUser(next http.Handler) http.Handler {
 			return
 		}
 
-		resp, err := supa.Client.Auth.User(r.Context(), accessToken.(string))
+		at, ok := accessToken.(string)
+		fmt.Println("auth user:", accessToken, at, ok)
+
+		resp, err := supa.Client.Auth.User(r.Context(), at)
 		if err != nil {
-			fmt.Println("err auth user", err)
+			fmt.Println("err auth user:", err, resp)
 			store := sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY")))
 			session, _ := store.Get(r, "user")
 			session.Values["accessToken"] = ""

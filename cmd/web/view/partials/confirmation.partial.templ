@@ -1,0 +1,55 @@
+package partials
+
+templ ConfirmAlert() {
+	<script>
+    var request = undefined
+
+    document.addEventListener("htmx:confirm", function(e) {
+      // Handle backdrop modal click
+      if(e.detail.verb === "dialog") {
+        e.preventDefault()
+        closeModal()
+        return;
+       }
+
+      // Handle confirmation
+      if (e.target.hasAttribute('hx-confirm')) {
+        e.preventDefault()
+
+        const confirmAlert = document.getElementById("confirm-alert")
+        const confirmText = document.getElementById("confirm-text")
+
+        confirmText.innerText = e.detail.question
+
+        request = e.detail.issueRequest
+        confirmAlert.showModal()
+      } 
+    })
+
+    function confirm() {
+      request(true)
+      request = undefined
+      closeModal()
+    }
+
+    function closeModal() {
+      const confirmAlert = document.getElementById("confirm-alert")
+      confirmAlert.close()
+    }
+  </script>
+	<dialog id="confirm-alert" class="modal">
+		<div class="modal-box flex flex-col gap-8">
+			<div class="flex flex-col items-center gap-8">
+				<h3 class="text-l">Proceed?</h3>
+				<div id="confirm-text" class="font-bold text-xl">Are you sure?</div>
+			</div>
+			<div class="flex justify-evenly">
+				<button onclick="closeModal()" class="btn">Deny</button>
+				<button onclick="confirm()" class="btn btn-primary">Accept</button>
+			</div>
+		</div>
+		<form method="dialog" class="modal-backdrop">
+			<button>close</button>
+		</form>
+	</dialog>
+}

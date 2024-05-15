@@ -143,6 +143,7 @@ func LoginPostHandler(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	if err := setAuthSession(w, r, resp.AccessToken); err != nil {
+		fmt.Println("login post handler", err)
 		return err
 	}
 
@@ -161,7 +162,6 @@ func AuthCallbackHandler(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	hxRedirect(w, r, "/")
-	// http.Redirect(w, r, "/", http.StatusSeeOther)
 
 	return nil
 }
@@ -170,30 +170,14 @@ func setAuthSession(w http.ResponseWriter, r *http.Request, accessToken string) 
 	store := sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY")))
 	session, _ := store.Get(r, sessionUserKey)
 	session.Values["accessToken"] = accessToken
-	return session.Save(r, w)
-
-	// cookie := &http.Cookie{
-	// 	Value:    accessToken,
-	// 	Name:     "at",
-	// 	Path:     "/",
-	// 	HttpOnly: true,
-	// 	Secure:   true,
-	// }
-
-	// http.SetCookie(w, cookie)
+	err := session.Save(r, w)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func LogoutHandler(w http.ResponseWriter, r *http.Request) error {
-	// c := &http.Cookie{
-	// 	Name:     "at",
-	// 	Value:    "",
-	// 	Path:     "/",
-	// 	Expires:  time.Unix(0, 0),
-	// 	MaxAge:   -1,
-	// 	HttpOnly: true,
-	// 	Secure:   true,
-	// }
-
 	store := sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY")))
 	session, _ := store.Get(r, sessionUserKey)
 
@@ -205,9 +189,7 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) error {
 	session.Values["accessToken"] = ""
 	session.Save(r, w)
 
-	// http.SetCookie(w, c)
 	hxRedirect(w, r, "/")
-	// http.Redirect(w, r, "/", http.StatusSeeOther)
 
 	return nil
 }
@@ -225,6 +207,5 @@ func LoginWithGoogleHandler(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	hxRedirect(w, r, resp.URL)
-	// http.Redirect(w, r, resp.URL, http.StatusSeeOther)
 	return nil
 }
