@@ -62,4 +62,12 @@ watch:
 	    fi; \
 	fi
 
+
+up: ## Database migration up
+		@go run internal/database/migrate/migrate.go up
+
+migration:
+		@migrate create -ext sql -dir cmd/migrate/migrations $(filter-out $@,$(MAKECMDGOALS))
+
+
 .PHONY: all build run test clean
