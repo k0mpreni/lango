@@ -2,11 +2,10 @@ package server
 
 import (
 	"encoding/json"
-	"log"
-	"net/http"
-
 	"lango/cmd/web"
 	"lango/cmd/web/handler"
+	"log"
+	"net/http"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -69,6 +68,6 @@ func (s *Server) HelloWorldHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) healthHandler(w http.ResponseWriter, r *http.Request) {
-	jsonResp, _ := json.Marshal(s.db.Health())
+	jsonResp, _ := json.Marshal(s.db.App.Health())
 	_, _ = w.Write(jsonResp)
 }

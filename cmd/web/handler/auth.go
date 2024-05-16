@@ -147,7 +147,8 @@ func LoginPostHandler(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	return hxRedirect(w, r, "/")
+	hxRedirect(w, r, "/")
+	return nil
 }
 
 func AuthCallbackHandler(w http.ResponseWriter, r *http.Request) error {

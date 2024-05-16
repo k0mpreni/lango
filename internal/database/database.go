@@ -1,24 +1,19 @@
 package database
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
+	"lango/internal/database/domain"
 	"log"
 	"os"
-	"time"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	_ "github.com/joho/godotenv/autoload"
 )
 
-type Service interface {
-	Health() map[string]string
-}
-
-type service struct {
-	db *sql.DB
-}
+// type Service interface {
+// 	Health() map[string]string
+// }
 
 var (
 	database   = os.Getenv("DB_DATABASE")
@@ -26,10 +21,10 @@ var (
 	username   = os.Getenv("DB_USERNAME")
 	port       = os.Getenv("DB_PORT")
 	host       = os.Getenv("DB_HOST")
-	dbInstance *service
+	dbInstance *domain.Models
 )
 
-func New() Service {
+func New() *domain.Models {
 	// Reuse Connection
 	if dbInstance != nil {
 		return dbInstance
@@ -46,22 +41,7 @@ func New() Service {
 	if err != nil {
 		log.Fatal("err", err)
 	}
-	dbInstance = &service{
-		db: db,
-	}
+	m := domain.NewModels(db)
+	dbInstance = &m
 	return dbInstance
-}
-
-func (s *service) Health() map[string]string {
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-	defer cancel()
-
-	err := s.db.PingContext(ctx)
-	if err != nil {
-		log.Fatalf(fmt.Sprintf("db down: %v", err))
-	}
-
-	return map[string]string{
-		"message": "It's healthy",
-	}
 }

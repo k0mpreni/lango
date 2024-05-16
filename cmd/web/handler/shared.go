@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"lango/internal/types"
+	"lango/cmd/web/types"
 	"log/slog"
 	"net/http"
 
@@ -28,13 +28,11 @@ func render(r *http.Request, w http.ResponseWriter, component templ.Component) e
 	return component.Render(r.Context(), w)
 }
 
-func hxRedirect(w http.ResponseWriter, r *http.Request, to string) error {
+func hxRedirect(w http.ResponseWriter, r *http.Request, to string) {
 	if len(r.Header.Get("HX-Request")) > 0 {
 		w.Header().Set("HX-Redirect", to)
 		w.WriteHeader(http.StatusSeeOther)
-		return nil
 	}
 
 	http.Redirect(w, r, to, http.StatusSeeOther)
-	return nil
 }

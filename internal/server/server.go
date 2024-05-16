@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"lango/internal/database"
+	"lango/internal/database/domain"
 	"lango/internal/supa"
 	"net/http"
 	"os"
@@ -16,7 +17,7 @@ import (
 type Server struct {
 	port int
 
-	db database.Service
+	db *domain.Models
 	sb *supabase.Client
 }
 

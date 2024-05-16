@@ -63,3 +63,11 @@ make clean
 ## Known bugs
 
 - When connecting with google, changing password, relog with google, it disconnects the user. Doesn't do this with credentials auth
+
+## TODO
+
+- DB with users, roles
+- Admin panel
+- Blog / CMS
+- testing
+- billing
