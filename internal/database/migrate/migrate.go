@@ -1,30 +1,19 @@
 package main
 
 import (
+	"database/sql"
+	"fmt"
 	"lango/internal/database"
-	"lango/internal/database/domain"
 	"log"
 	"os"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-	"github.com/joho/godotenv"
 )
 
-func createDB() (*domain.Models, error) {
-	if err := godotenv.Load(); err != nil {
-		return nil, err
-	}
-
-	return database.New(), nil
-}
-
-func main() {
-	db := database.New()
-
-	// Create migration instance
-	driver, err := postgres.WithInstance(db.App.DB, &postgres.Config{})
+func migrateDB(db *sql.DB) {
+	driver, err := postgres.WithInstance(db, &postgres.Config{})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -41,6 +30,7 @@ func main() {
 
 	cmd := os.Args[len(os.Args)-1]
 	if cmd == "up" {
+		fmt.Println("Running Migrations")
 		if err := m.Up(); err != nil && err != migrate.ErrNoChange {
 			log.Fatal(err)
 		}
@@ -50,4 +40,13 @@ func main() {
 			log.Fatal(err)
 		}
 	}
+}
+
+func main() {
+	db := database.New()
+
+	// migrateDB(db.App.DB)
+
+	migrateDB(db.Users.DB)
+	// migrateDB(db.Courses.DB)
 }

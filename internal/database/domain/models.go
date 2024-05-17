@@ -1,15 +1,22 @@
 package domain
 
-import "database/sql"
+import (
+	"database/sql"
+	"errors"
+)
+
+var ErrRecordNotFound = errors.New("record not found")
 
 type Models struct {
-	Users UserModel
-	App   AppModel
+	App     AppModel
+	Users   UserModel
+	Courses CourseModel
 }
 
 func NewModels(db *sql.DB) Models {
 	return Models{
-		Users: UserModel{DB: db},
-		App:   AppModel{DB: db},
+		App:     AppModel{DB: db},
+		Users:   UserModel{DB: db},
+		Courses: CourseModel{DB: db},
 	}
 }

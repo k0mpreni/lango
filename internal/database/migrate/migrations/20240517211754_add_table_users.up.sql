@@ -1,9 +1,9 @@
 CREATE TABLE IF NOT EXISTS users (
-  id bigserial PRIMARY KEY,
+  id uuid PRIMARY KEY,
   created_at timestamp(0)
   with
     time zone NOT NULL DEFAULT NOW (),
-    email citext UNIQUE NOT NULL,
-    user_id uuid references auth.users,
+    email text UNIQUE NOT NULL,
+    user_id uuid,
     role smallint DEFAULT 1
 );
