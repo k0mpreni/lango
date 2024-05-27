@@ -1,12 +1,18 @@
 package partials
 
+import "lango/cmd/web/view"
+
 templ Footer() {
 	<footer class="footer p-10 bg-base-200 text-base-200-content">
 		<div>
 			<h6 class="footer-title">Services</h6>
 			<a href="/" class="link link-hover">Home</a>
 			<a href="/#pricing" class="link link-hover">Pricing</a>
-			<a href="/login" class="link link-hover">Login</a>
+			if view.AuthenticatedUser(ctx).LoggedIn {
+				<a href="/account" class="link link-hover">Account</a>
+			} else {
+				<a href="/login" class="link link-hover">Login</a>
+			}
 		</div>
 		<div>
 			<h6 class="footer-title">Company</h6>

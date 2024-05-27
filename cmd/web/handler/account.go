@@ -3,6 +3,8 @@ package handler
 import (
 	"lango/cmd/web/view"
 	"lango/cmd/web/view/account"
+	"lango/internal/database"
+	"lango/internal/database/domain"
 	"lango/internal/supa"
 	"log/slog"
 	"net/http"
@@ -25,12 +27,22 @@ import (
 
 func AccountHandler(w http.ResponseWriter, r *http.Request) error {
 	u := getAuthenticatedUser(r)
+	user, err := database.DB.Users.GetById(u.ID)
+	if err != nil {
+		return err
+	}
 
-	return render(r, w, account.Index(account.AccountUser{Email: u.Email}))
+	return render(r, w, account.Index(*user))
 }
 
 func AccountPutHandler(w http.ResponseWriter, r *http.Request) error {
-	params := account.AccountUser{
+	type AccountUser struct {
+		Email           string
+		CurrentPassword string
+		NewPassword     string
+	}
+
+	params := AccountUser{
 		Email:           r.FormValue("email"),
 		CurrentPassword: r.FormValue("currentPassword"),
 		NewPassword:     r.FormValue("newPassword"),
@@ -51,7 +63,7 @@ func AccountPutHandler(w http.ResponseWriter, r *http.Request) error {
 		return render(
 			r,
 			w,
-			account.AccountForm(account.AccountUser{Email: params.Email}, account.AccountErrors{
+			account.AccountForm(domain.User{Email: params.Email}, account.AccountErrors{
 				NewPassword: "Password must be longer than 8 characters",
 			}),
 		)
@@ -69,7 +81,7 @@ func AccountPutHandler(w http.ResponseWriter, r *http.Request) error {
 		return render(
 			r,
 			w,
-			account.AccountForm(account.AccountUser{Email: params.Email}, account.AccountErrors{
+			account.AccountForm(domain.User{Email: params.Email}, account.AccountErrors{
 				CurrentPassword: "Impossible to update the account",
 			}),
 		)
@@ -79,7 +91,7 @@ func AccountPutHandler(w http.ResponseWriter, r *http.Request) error {
 	return render(
 		r,
 		w,
-		account.AccountForm(account.AccountUser{Email: user.Email}, account.AccountErrors{}),
+		account.AccountForm(domain.User{Email: user.Email}, account.AccountErrors{}),
 	)
 }
 

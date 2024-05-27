@@ -153,6 +153,7 @@ func LoginPostHandler(w http.ResponseWriter, r *http.Request) error {
 
 func AuthCallbackHandler(w http.ResponseWriter, r *http.Request) error {
 	accessToken := r.URL.Query().Get("access_token")
+	fmt.Println(accessToken)
 
 	if len(accessToken) == 0 {
 		return render(r, w, auth.CallbackScript())

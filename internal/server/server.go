@@ -21,27 +21,31 @@ type Server struct {
 	sb *supabase.Client
 }
 
+var CurrentServer Server
+
 func NewServer() *http.Server {
 	port, _ := strconv.Atoi(os.Getenv("PORT"))
 	if err := supa.Init(); err != nil {
 		fmt.Println("error init supabase client", err)
 	}
-	NewServer := &Server{
+	if err := database.Init(); err != nil {
+		fmt.Println("error init database", err)
+	}
+
+	CurrentServer = Server{
 		port: port,
-		db:   database.New(),
+		db:   database.DB,
 		sb:   supa.Client,
 	}
 
 	// Declare Server config
 	server := &http.Server{
-		Addr:         fmt.Sprintf(":%d", NewServer.port),
-		Handler:      NewServer.RegisterRoutes(),
+		Addr:         fmt.Sprintf(":%d", CurrentServer.port),
+		Handler:      CurrentServer.RegisterRoutes(),
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
 	}
-
-	supa.Init()
 
 	return server
 }

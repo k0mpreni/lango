@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"log"
 	"time"
 
 	"github.com/google/uuid"
@@ -72,15 +73,15 @@ func (m *CourseModel) GetById(id uuid.UUID) (*Course, error) {
 	return &course, nil
 }
 
-func (m *CourseModel) GetByTeacherId(id uuid.UUID) (*Course, error) {
+func (m *CourseModel) GetAllByTeacher(user *User) (*[]Course, error) {
 	query := `SELECT * FROM courses WHERE teacher_id = $1;`
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	var course Course
+	var courses []Course
 
-	err := m.DB.QueryRowContext(ctx, query, id).Scan()
+	rows, err := m.DB.QueryContext(ctx, query, user.Id)
 	if err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
@@ -89,18 +90,24 @@ func (m *CourseModel) GetByTeacherId(id uuid.UUID) (*Course, error) {
 			return nil, err
 		}
 	}
-	return &course, nil
+
+	for rows.Next() {
+		err = rows.Scan(&courses)
+		if err != nil {
+			log.Fatalf("Failed to retrieve row because %s", err)
+		}
+	}
+	return &courses, nil
 }
 
-func (m *CourseModel) GetByStudentId(id uuid.UUID) (*Course, error) {
+func (m *CourseModel) GetAllByStudent(user *User) (*[]Course, error) {
 	query := `SELECT * FROM courses WHERE student_id = $1;`
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	var course Course
-
-	err := m.DB.QueryRowContext(ctx, query, id).Scan()
+	var courses []Course
+	rows, err := m.DB.QueryContext(ctx, query, user.Id)
 	if err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
@@ -109,5 +116,13 @@ func (m *CourseModel) GetByStudentId(id uuid.UUID) (*Course, error) {
 			return nil, err
 		}
 	}
-	return &course, nil
+
+	for rows.Next() {
+		err = rows.Scan(&courses)
+		if err != nil {
+			log.Fatalf("Failed to retrieve row because %s", err)
+		}
+	}
+
+	return &courses, nil
 }

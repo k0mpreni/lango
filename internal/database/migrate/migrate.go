@@ -3,14 +3,49 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"lango/internal/database"
 	"log"
 	"os"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	_ "github.com/jackc/pgx/v5/stdlib"
+	_ "github.com/joho/godotenv/autoload"
 )
+
+type MigrationDB struct {
+	DB *sql.DB
+}
+
+var (
+	database   = os.Getenv("DB_DATABASE")
+	password   = os.Getenv("DB_PASSWORD")
+	username   = os.Getenv("DB_USERNAME")
+	port       = os.Getenv("DB_PORT")
+	host       = os.Getenv("DB_HOST")
+	dbInstance *MigrationDB
+)
+
+func New() *MigrationDB {
+	// Reuse Connection
+	if dbInstance != nil {
+		return dbInstance
+	}
+	connStr := fmt.Sprintf(
+		"postgres://%s:%s@%s:%s/%s?sslmode=disable",
+		username,
+		password,
+		host,
+		port,
+		database,
+	)
+	db, err := sql.Open("pgx", connStr)
+	if err != nil {
+		log.Fatal("err", err)
+	}
+	dbInstance = &MigrationDB{DB: db}
+	return dbInstance
+}
 
 func migrateDB(db *sql.DB) {
 	driver, err := postgres.WithInstance(db, &postgres.Config{})
@@ -43,10 +78,7 @@ func migrateDB(db *sql.DB) {
 }
 
 func main() {
-	db := database.New()
+	db := New()
 
-	// migrateDB(db.App.DB)
-
-	migrateDB(db.Users.DB)
-	// migrateDB(db.Courses.DB)
+	migrateDB(db.DB)
 }

@@ -17,6 +17,12 @@ build:
 run:
 	@go run cmd/api/main.go
 
+# supa:
+# 	cd internal/supa && supabase start && cd ../..
+#
+# supa-down:
+# 	cd internal/supa && supabase stop && cd ../..
+
 # Create DB container
 docker-run:
 	@if docker compose up 2>/dev/null; then \
@@ -68,6 +74,9 @@ watch:
 
 up: ## Database migration up
 		@go run ./internal/database/migrate/migrate.go up
+
+down: ## Database migration up
+		@go run ./internal/database/migrate/migrate.go down
 
 migration:
 		@migrate create -ext sql -dir internal/database/migrate/migrations $(filter-out $@,$(MAKECMDGOALS))

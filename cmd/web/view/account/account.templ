@@ -2,6 +2,7 @@ package account
 
 import (
 	"lango/cmd/web/view/layout"
+	"lango/internal/database/domain"
 )
 
 type AccountErrors struct {
@@ -10,19 +11,14 @@ type AccountErrors struct {
 	CurrentPassword string
 }
 
-type AccountUser struct {
-	Email           string
-	NewPassword     string
-	CurrentPassword string
-}
-
-templ Index(user AccountUser) {
+templ Index(user domain.User) {
 	@layout.Base(true, "Account") {
 		<section class="py-10 sm:py-16 lg:py-24 mx-auto px-4 sm:px-6 lg:px-8 bg-base-200">
 			<div class="flex justify-center">
 				<div class="flex flex-col items-center" id="account">
 					<div class="max-w-md w-full bg-base-300 p-10 rounded-xl">
 						<h1>Account settings</h1>
+						<!-- <p>{ user.ContactInfos }</p> -->
 						@AccountForm(user, AccountErrors{})
 					</div>
 				</div>
@@ -31,7 +27,7 @@ templ Index(user AccountUser) {
 	}
 }
 
-templ AccountForm(user AccountUser, errors AccountErrors) {
+templ AccountForm(user domain.User, errors AccountErrors) {
 	<form
 		hx-put="/account"
 		hx-swap="outerHTML"
@@ -79,6 +75,11 @@ templ AccountForm(user AccountUser, errors AccountErrors) {
 			<div id="update-success"></div>
 		</div>
 	</form>
+	<button
+		hx-delete="/account"
+		hx-confirm="Are you sure you want to delete your account?"
+		class="w-full btn btn-outline btn-secondary"
+	>Delete account</button>
 }
 
 templ AccountDeleted() {

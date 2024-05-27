@@ -11,10 +11,6 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 )
 
-// type Service interface {
-// 	Health() map[string]string
-// }
-
 var (
 	database   = os.Getenv("DB_DATABASE")
 	password   = os.Getenv("DB_PASSWORD")
@@ -24,11 +20,9 @@ var (
 	dbInstance *domain.Models
 )
 
-func New() *domain.Models {
-	// Reuse Connection
-	if dbInstance != nil {
-		return dbInstance
-	}
+var DB *domain.Models
+
+func Init() error {
 	connStr := fmt.Sprintf(
 		"postgres://%s:%s@%s:%s/%s?sslmode=disable",
 		username,
@@ -40,8 +34,9 @@ func New() *domain.Models {
 	db, err := sql.Open("pgx", connStr)
 	if err != nil {
 		log.Fatal("err", err)
+		return err
 	}
 	m := domain.NewModels(db)
-	dbInstance = &m
-	return dbInstance
+	DB = &m
+	return nil
 }
