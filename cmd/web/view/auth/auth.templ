@@ -6,8 +6,15 @@ import (
 	"lango/cmd/web/view/partials"
 )
 
-templ EmailSent(email string) {
-	<div>An email has been sent to: <span class="text-semibold">{ email }</span></div>
+templ EmailSent(email string, errors LoginErrors) {
+	<div>
+		if len(errors.Email) > 0 {
+			<p>This email address is already used, please login or used a different email.</p>
+		} else {
+			<p>An email has been sent to: <span class="text-semibold">{ email }</span></p>
+		}
+		<a href="/login" class="mt-4 btn btn-outline btn-primary w-full">Login</a>
+	</div>
 }
 
 templ CallbackScript() {

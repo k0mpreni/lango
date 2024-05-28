@@ -31,6 +31,7 @@ func SignUpCreateHandler(w http.ResponseWriter, r *http.Request) error {
 
 	err := checkmail.ValidateFormat(params.Email)
 	if err != nil {
+		fmt.Println(err)
 		return render(r, w, auth.SignUpForm(params, auth.SignUpErrors{
 			Email: "Please enter a valid email",
 		}))
@@ -50,15 +51,20 @@ func SignUpCreateHandler(w http.ResponseWriter, r *http.Request) error {
 		}))
 	}
 
-	user, err := supa.Client.Auth.SignUp(r.Context(), supabase.UserCredentials{
+	_, err = supa.Client.Auth.SignUp(r.Context(), supabase.UserCredentials{
 		Email:    params.Email,
 		Password: params.Password,
 	})
 	if err != nil {
-		return err
+		switch err.Error() {
+		case "User already registered":
+			return render(r, w, auth.EmailSent(params.Email, auth.LoginErrors{Email: err.Error()}))
+		default:
+			return err
+		}
 	}
 
-	return render(r, w, auth.EmailSent(user.Email))
+	return render(r, w, auth.EmailSent(params.Email, auth.LoginErrors{}))
 }
 
 func LoginGetHandler(w http.ResponseWriter, r *http.Request) error {
@@ -87,7 +93,7 @@ func PasswordResetPostHandler(w http.ResponseWriter, r *http.Request) error {
 		)
 	}
 
-	return render(r, w, auth.EmailSent(credentials.Email))
+	return render(r, w, auth.EmailSent(credentials.Email, auth.LoginErrors{}))
 }
 
 func LoginOtherMethodsHandler(w http.ResponseWriter, r *http.Request) error {
@@ -109,7 +115,7 @@ func MagicLinkCreateHandler(w http.ResponseWriter, r *http.Request) error {
 		slog.Error("error sending magic link", "err", err)
 	}
 
-	return render(r, w, auth.EmailSent(credentials.Email))
+	return render(r, w, auth.EmailSent(credentials.Email, auth.LoginErrors{}))
 }
 
 func LoginPostHandler(w http.ResponseWriter, r *http.Request) error {
