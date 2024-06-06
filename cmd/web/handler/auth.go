@@ -19,7 +19,7 @@ const (
 )
 
 func SignupGetHandler(w http.ResponseWriter, r *http.Request) error {
-	return render(r, w, auth.SignUp())
+	return render(r, w, auth.SignUpForm(auth.SignupParams{}, auth.SignUpErrors{}))
 }
 
 func SignUpCreateHandler(w http.ResponseWriter, r *http.Request) error {
@@ -68,7 +68,7 @@ func SignUpCreateHandler(w http.ResponseWriter, r *http.Request) error {
 }
 
 func LoginGetHandler(w http.ResponseWriter, r *http.Request) error {
-	return render(r, w, auth.Login())
+	return render(r, w, auth.LoginForm(supabase.UserCredentials{}, auth.LoginErrors{}))
 }
 
 func PasswordResetHandler(w http.ResponseWriter, r *http.Request) error {
@@ -101,6 +101,7 @@ func LoginOtherMethodsHandler(w http.ResponseWriter, r *http.Request) error {
 }
 
 func MagicLinkGetHandler(w http.ResponseWriter, r *http.Request) error {
+	// TODO: Render full page
 	return render(r, w, auth.LoginMagicLinkForm(supabase.UserCredentials{}, auth.LoginErrors{}))
 }
 

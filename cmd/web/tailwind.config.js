@@ -2,7 +2,11 @@
 module.exports = {
   content: ["view/**/*.templ"],
   theme: {
-    extend: {},
+    extend: {
+      gridTemplateRows: {
+        layout: "auto minmax(500px, 1fr) auto",
+      },
+    },
   },
   plugins: [require("daisyui")],
   daisyui: {

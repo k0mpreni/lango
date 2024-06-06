@@ -29,12 +29,12 @@ templ CallbackScript() {
 
 templ Login() {
 	@layout.Base(true, "Login") {
-		<section class="py-10 sm:py-16 lg:py-24 mx-auto px-4 sm:px-6 lg:px-8 bg-base-200">
+		<section class="py-10 sm:py-16 mx-auto px-4 sm:px-6 lg:px-8 bg-base-200">
 			<div class="flex justify-center">
 				<div class="max-w-md w-full bg-base-300 p-10 rounded-xl ">
 					<h1 class="text-center font-semibold mb-10">Login into Lango</h1>
 					<div id="login-form">
-						@LoginForm(supabase.UserCredentials{}, LoginErrors{})
+						{ children... }
 					</div>
 				</div>
 			</div>
@@ -43,31 +43,33 @@ templ Login() {
 }
 
 templ LoginMagicLinkForm(creds supabase.UserCredentials, errors LoginErrors) {
-	<form
-		hx-post="/login-magic-link"
-		hx-swap="outerHTML"
-	>
-		<div class="space-y-4 flex flex-col justify-center">
-			<label class="form-control w-full">
-				<div class="label">
-					<span class="label-text">Email</span>
-				</div>
-				<input type="email" name="email" value={ creds.Email } required placeholder="tutu@toto.com" class="input input-bordered w-full"/>
-				if len(errors.Email) > 0 {
+	@Login() {
+		<form
+			hx-post="/login-magic-link"
+			hx-swap="outerHTML"
+		>
+			<div class="space-y-4 flex flex-col justify-center">
+				<label class="form-control w-full">
 					<div class="label">
-						<span class="label-text-alt text-error">{ errors.Email }</span>
+						<span class="label-text">Email</span>
 					</div>
-				}
-			</label>
-		</div>
-		<div class="flex flex-col justify-center items-center w-full gap-4">
-			<button type="submit" class="btn btn-primary mt-10 w-full">
-				Login
-				@partials.Spinner()
-			</button>
-			<button hx-on:click="history.back()" hx-swap="innerHTML" hx-target="#login-form" class="btn btn-link w-full">Back</button>
-		</div>
-	</form>
+					<input type="email" name="email" value={ creds.Email } required placeholder="tutu@toto.com" class="input input-bordered w-full"/>
+					if len(errors.Email) > 0 {
+						<div class="label">
+							<span class="label-text-alt text-error">{ errors.Email }</span>
+						</div>
+					}
+				</label>
+			</div>
+			<div class="flex flex-col justify-center items-center w-full gap-4">
+				<button type="submit" class="btn btn-primary mt-10 w-full">
+					Login
+					@partials.Spinner()
+				</button>
+				<button hx-on:click="history.back()" hx-swap="innerHTML" hx-target="#login-form" class="btn btn-link w-full">Back</button>
+			</div>
+		</form>
+	}
 }
 
 type LoginErrors struct {
@@ -77,62 +79,64 @@ type LoginErrors struct {
 }
 
 templ LoginForm(creds supabase.UserCredentials, errors LoginErrors) {
-	<form hx-post="/login">
-		<div class="space-y-4 flex flex-col justify-center">
-			<label class="form-control w-full">
-				<div class="label">
-					<span class="label-text">Email</span>
-				</div>
-				<input type="email" name="email" value={ creds.Email } required placeholder="tutu@toto.com" class="input input-bordered w-full"/>
-				if len(errors.Email) > 0 {
+	@Login() {
+		<form hx-post="/login">
+			<div class="space-y-4 flex flex-col justify-center">
+				<label class="form-control w-full">
 					<div class="label">
-						<span class="label-text-alt text-error">{ errors.Email }</span>
+						<span class="label-text">Email</span>
 					</div>
-				}
-			</label>
-			<label class="form-control w-full">
-				<div class="label">
-					<span class="label-text">Password</span>
-				</div>
-				<input type="password" name="password" required placeholder="password" class="input input-bordered w-full"/>
-				if len(errors.Password) > 0 {
+					<input type="email" name="email" value={ creds.Email } required placeholder="tutu@toto.com" class="input input-bordered w-full"/>
+					if len(errors.Email) > 0 {
+						<div class="label">
+							<span class="label-text-alt text-error">{ errors.Email }</span>
+						</div>
+					}
+				</label>
+				<label class="form-control w-full">
 					<div class="label">
-						<span class="label-text-alt text-error">{ errors.Password }</span>
+						<span class="label-text">Password</span>
 					</div>
-				}
-				if len(errors.InvalidCredentials) > 0 {
-					<div class="label">
-						<span class="label-text-alt text-error">{ errors.InvalidCredentials }</span>
-					</div>
-				}
-			</label>
-		</div>
-		<div class="flex flex-col gap-4 w-full mt-8">
-			<button type="submit" class="w-full btn btn-primary">Login</button>
-			<a href="/signup" class="w-full btn btn-outline btn-secondary">Create an account</a>
-			<button hx-get="/login/password-reset" hx-swap="ineerHTML" hx-target="#login-form" class="btn btn-link w-full">Reset Password</button>
-		</div>
-		<div class="divider">OR</div>
-		<div class="flex flex-col gap-4">
-			<button hx-get="/login-magic-link" hx-swap="innerHTML" hx-target="#login-form" hx-push-url="true" class="btn btn-outline w-full">Use Magic Link</button>
-			<a href="/login/provider/google" class="btn btn-outline w-full fill-neutral-content hover:fill-base-100">
-				Google
-				<i class="fa-brands fa-google"></i>
-			</a>
-		</div>
-	</form>
+					<input type="password" name="password" required placeholder="password" class="input input-bordered w-full"/>
+					if len(errors.Password) > 0 {
+						<div class="label">
+							<span class="label-text-alt text-error">{ errors.Password }</span>
+						</div>
+					}
+					if len(errors.InvalidCredentials) > 0 {
+						<div class="label">
+							<span class="label-text-alt text-error">{ errors.InvalidCredentials }</span>
+						</div>
+					}
+				</label>
+			</div>
+			<div class="flex flex-col gap-4 w-full mt-8">
+				<button type="submit" class="w-full btn btn-primary">Login</button>
+				<a href="/signup" class="w-full btn btn-outline btn-secondary">Create an account</a>
+				<a href="/login/password-reset" class="btn btn-link w-full">Reset Password</a>
+			</div>
+			<div class="divider">OR</div>
+			<div class="flex flex-col gap-4">
+				<a href="/login-magic-link" class="btn btn-outline w-full">Use Magic Link</a>
+				<a href="/login/provider/google" class="btn btn-outline w-full fill-neutral-content hover:fill-base-100">
+					Google
+					<i class="fa-brands fa-google"></i>
+				</a>
+			</div>
+		</form>
+	}
 }
 
 /* ---- SIGNUP ---- */
 
 templ SignUp() {
 	@layout.Base(true, "Create an account") {
-		<section class="py-10 sm:py-16 lg:py-24 mx-auto px-4 sm:px-6 lg:px-8 bg-base-200">
+		<section class="py-10 sm:py-16 mx-auto px-4 sm:px-6 lg:px-8 bg-base-200">
 			<div class="flex justify-center">
 				<div class="max-w-md w-full bg-base-300 p-10 rounded-xl ">
 					<h1 class="text-center font-semibold mb-10">Signup</h1>
 					<div id="signup-form">
-						@SignUpForm(SignupParams{}, SignUpErrors{})
+						{ children... }
 					</div>
 				</div>
 			</div>
@@ -153,78 +157,82 @@ type SignUpErrors struct {
 }
 
 templ SignUpForm(params SignupParams, errors SignUpErrors) {
-	<form
-		hx-post="/signup"
-	>
-		<div class="space-y-4 flex flex-col justify-center items-center">
-			<label class="form-control w-full">
-				<div class="label">
-					<span class="label-text">Email</span>
-				</div>
-				<input type="email" name="email" value={ params.Email } required placeholder="tutu@toto.com" class="input input-bordered w-full"/>
-				if len(errors.Email) > 0 {
+	@SignUp() {
+		<form
+			hx-post="/signup"
+		>
+			<div class="space-y-4 flex flex-col justify-center items-center">
+				<label class="form-control w-full">
 					<div class="label">
-						<span class="label-text-alt text-error">{ errors.Email }</span>
+						<span class="label-text">Email</span>
 					</div>
-				}
-			</label>
-			<label class="form-control w-full">
-				<div class="label">
-					<span class="label-text">Password</span>
-				</div>
-				<input type="password" name="password" required placeholder="password" class="input input-bordered w-full"/>
-				if len(errors.Password) > 0 {
+					<input type="email" name="email" value={ params.Email } required placeholder="tutu@toto.com" class="input input-bordered w-full"/>
+					if len(errors.Email) > 0 {
+						<div class="label">
+							<span class="label-text-alt text-error">{ errors.Email }</span>
+						</div>
+					}
+				</label>
+				<label class="form-control w-full">
 					<div class="label">
-						<span class="label-text-alt text-error">{ errors.Password }</span>
+						<span class="label-text">Password</span>
 					</div>
-				}
-			</label>
-			<label class="form-control w-full">
-				<div class="label">
-					<span class="label-text">Confirm Password</span>
-				</div>
-				<input type="password" name="confirmPassword" required placeholder="Confirm Password" class="input input-bordered w-full"/>
-				if len(errors.ConfirmPassword) > 0 {
+					<input type="password" name="password" required placeholder="password" class="input input-bordered w-full"/>
+					if len(errors.Password) > 0 {
+						<div class="label">
+							<span class="label-text-alt text-error">{ errors.Password }</span>
+						</div>
+					}
+				</label>
+				<label class="form-control w-full">
 					<div class="label">
-						<span class="label-text-alt text-error">{ errors.ConfirmPassword }</span>
+						<span class="label-text">Confirm Password</span>
 					</div>
-				}
-			</label>
-		</div>
-		<div class="flex flex-col justify-center items-center w-full">
-			<button type="submit" class="btn btn-primary mt-10 w-full">Sign up</button>
-		</div>
-		<div class="divider">OR</div>
-		<div class="flex flex-col gap-4">
-			<button hx-get="/login-magic-link" hx-push-url="true" hx-swap="innerHTML" hx-target="#signup-form" class="w-full btn btn-outline btn-secondary">Use Magic Link</button>
-			<a href="/login" class="btn btn-outline w-full">You already have an account</a>
-		</div>
-	</form>
+					<input type="password" name="confirmPassword" required placeholder="Confirm Password" class="input input-bordered w-full"/>
+					if len(errors.ConfirmPassword) > 0 {
+						<div class="label">
+							<span class="label-text-alt text-error">{ errors.ConfirmPassword }</span>
+						</div>
+					}
+				</label>
+			</div>
+			<div class="flex flex-col justify-center items-center w-full">
+				<button type="submit" class="btn btn-primary mt-10 w-full">Sign up</button>
+			</div>
+			<div class="divider">OR</div>
+			<div class="flex flex-col gap-4">
+				<a href="/login-magic-link" class="w-full btn btn-outline btn-secondary">Use Magic Link</a>
+				<a href="/login" class="btn btn-outline w-full">You already have an account</a>
+			</div>
+		</form>
+	}
 }
 
 /* ---- RESET PASSWORD ---- */
 
 templ ResetPassword(errors LoginErrors) {
-	<form
-		hx-post="/login/password-reset"
-		hx-swap="outerHTML"
-	>
-		<div class="space-y-4 flex flex-col justify-center">
-			<label class="form-control w-full">
-				<div class="label">
-					<span class="label-text">Email</span>
-				</div>
-				<input type="email" name="email" required placeholder="chippies@email.com" class="input input-bordered w-full"/>
-				if len(errors.Email) > 0 {
+	@SignUp() {
+		<form
+			hx-post="/login/password-reset"
+			hx-swap="outerHTML"
+		>
+			<div class="space-y-4 flex flex-col justify-center">
+				<label class="form-control w-full">
 					<div class="label">
-						<span class="label-text-alt text-error">{ errors.Email }</span>
+						<span class="label-text">Email</span>
 					</div>
-				}
-			</label>
-		</div>
-		<div class="flex flex-col justify-center items-center w-full gap-4">
-			<button type="submit" class="btn btn-primary mt-10 w-full">Reset Password</button>
-			<a href="/login" class="btn btn-link w-full">Back</a>
-		</div>
-	</form>
+					<input type="email" name="email" required placeholder="chippies@email.com" class="input input-bordered w-full"/>
+					if len(errors.Email) > 0 {
+						<div class="label">
+							<span class="label-text-alt text-error">{ errors.Email }</span>
+						</div>
+					}
+				</label>
+			</div>
+			<div class="flex flex-col justify-center items-center w-full gap-4">
+				<button type="submit" class="btn btn-primary mt-10 w-full">Reset Password</button>
+				<a href="/login" class="btn btn-link w-full">Back</a>
+			</div>
+		</form>
+	}
 }

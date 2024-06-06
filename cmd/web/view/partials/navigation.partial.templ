@@ -3,17 +3,16 @@ package partials
 import "lango/cmd/web/view"
 
 templ Navigation() {
-	<div class="navbar bg-base-200" hx-boost="true">
+	<div class="navbar bg-base-200">
 		<div class="flex-1">
 			<a class="h-auto btn btn-ghost text-xl" href="/" title="Home">
 				<img src="/assets/logo.png" class="w-12" alt="logo"/>
 			</a>
 		</div>
 		<div class="flex-none">
-			<ul class="menu menu-horizontal px-1 z-[100]">
-				<li><a href="/#pricing" title="Pricing">Pricing</a></li>
-				<li><a href="/courses" title="Courses">Find a course</a></li>
+			<ul class="menu menu-horizontal px-1 z-[100] items-center gap-2">
 				if view.AuthenticatedUser(ctx).LoggedIn {
+					<li><a href="/courses" title="Courses" class="btn btn-accent btn-outline">My courses</a></li>
 					<li>
 						<details>
 							<summary>

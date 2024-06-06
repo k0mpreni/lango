@@ -45,7 +45,11 @@ func (m *CourseModel) Create(course *Course) error {
 	return nil
 }
 
-func (m *CourseModel) Update(id uuid.UUID) (*Course, error) {
+func (m *CourseModel) CompleteCourse(id uuid.UUID) (*Course, error) {
+	return nil, nil
+}
+
+func (m *CourseModel) CancelCourse(id uuid.UUID) (*Course, error) {
 	return nil, nil
 }
 

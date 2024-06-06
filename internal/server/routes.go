@@ -52,6 +52,8 @@ func (s *Server) RegisterRoutes() http.Handler {
 		chiRouter.Post("/account/delete", handler.Make(handler.AccountDeleteHandler))
 
 		chiRouter.Get("/courses", handler.Make(handler.CoursesHandler))
+		chiRouter.Get("/courses/create", handler.Make(handler.CoursesCreateHandler))
+		chiRouter.Get("/courses/join/{courseId}", handler.Make(handler.CoursesJoinHandler))
 	})
 
 	return r
