@@ -66,8 +66,5 @@ make clean
 
 ## TODO
 
-- DB with users, roles
-- Admin panel
-- Blog / CMS
-- testing
-- billing
+- Remove supabase dependencies
+- Use SQLC to generate go code from sql

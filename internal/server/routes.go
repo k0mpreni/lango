@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"lango/cmd/web"
 	"lango/cmd/web/handler"
 	"log"
@@ -9,6 +10,13 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/markbates/goth/gothic"
+)
+
+const (
+	key    = "randomString"
+	MaxAge = 86400 * 30
+	IsProd = false
 )
 
 func (s *Server) RegisterRoutes() http.Handler {
@@ -30,7 +38,17 @@ func (s *Server) RegisterRoutes() http.Handler {
 	r.Get("/login/password-reset", handler.Make(handler.PasswordResetHandler))
 	r.Post("/login/password-reset", handler.Make(handler.PasswordResetPostHandler))
 
-	r.Get("/login/provider/google", handler.Make(handler.LoginWithGoogleHandler))
+	// provider := chi.URLParam(req, "provider")
+	//
+	// req = req.WithContext(context.WithValue(context.Background(), "provider", provider))
+	// // try to get the user without re-authenticating
+	// if gothUser, err := gothic.CompleteUserAuth(res, req); err == nil {
+	// 	fmt.Println("GOTHUSER", gothUser)
+	// } else {
+	// 	fmt.Println("ERR", err)
+	// 	gothic.BeginAuthHandler(res, req)
+	// }
+
 	r.Get("/login-other-methods", handler.Make(handler.LoginOtherMethodsHandler))
 
 	r.Get("/login-magic-link", handler.Make(handler.MagicLinkGetHandler))
@@ -38,9 +56,26 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	r.Get("/signup", handler.Make(handler.SignupGetHandler))
 	r.Post("/signup", handler.Make(handler.SignUpCreateHandler))
-	r.Post("/logout", handler.Make(handler.LogoutHandler))
 
-	r.Get("/auth/callback", handler.Make(handler.AuthCallbackHandler))
+	r.Get("/auth/provider/{provider}", handler.Make(handler.LoginWithProviderHandler))
+	// r.Post("/logout", handler.Make(handler.LogoutHandler))
+	r.Get("/logout/{provider}", func(res http.ResponseWriter, req *http.Request) {
+		gothic.Logout(res, req)
+		res.Header().Set("Location", "/")
+		res.WriteHeader(http.StatusTemporaryRedirect)
+	})
+
+	// r.Get("/auth/callback", handler.Make(handler.AuthCallbackHandler))
+	r.Get("/auth/{provider}/callback", func(res http.ResponseWriter, req *http.Request) {
+		fmt.Println("CALLBACK")
+		user, err := gothic.CompleteUserAuth(res, req)
+		if err != nil {
+			fmt.Fprintln(res, err)
+			return
+		}
+		fmt.Println("AUTH CALLBACK", user)
+		http.Redirect(res, req, "http://localhost:8080", http.StatusFound)
+	})
 
 	r.Get("/pricing", handler.Make(handler.HandlePricingIndex))
 
@@ -52,7 +87,10 @@ func (s *Server) RegisterRoutes() http.Handler {
 		chiRouter.Post("/account/delete", handler.Make(handler.AccountDeleteHandler))
 
 		chiRouter.Get("/courses", handler.Make(handler.CoursesHandler))
+
 		chiRouter.Get("/courses/create", handler.Make(handler.CoursesCreateHandler))
+		chiRouter.Post("/courses/create", handler.Make(handler.CoursesCreatePostHandler))
+
 		chiRouter.Get("/courses/join/{courseId}", handler.Make(handler.CoursesJoinHandler))
 	})
 

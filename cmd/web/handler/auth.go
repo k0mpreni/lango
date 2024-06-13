@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"fmt"
 	"lango/cmd/web/view/auth"
 	"lango/internal/supa"
@@ -9,7 +10,9 @@ import (
 	"os"
 
 	"github.com/badoux/checkmail"
+	"github.com/go-chi/chi/v5"
 	"github.com/gorilla/sessions"
+	"github.com/markbates/goth/gothic"
 	"github.com/nedpals/supabase-go"
 )
 
@@ -203,18 +206,23 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func LoginWithGoogleHandler(w http.ResponseWriter, r *http.Request) error {
-	appUrl := os.Getenv("APP_URL")
+func LoginWithProviderHandler(w http.ResponseWriter, r *http.Request) error {
+	provider := chi.URLParam(r, "provider")
+	r = r.WithContext(context.WithValue(context.Background(), "provider", provider))
+	gothic.BeginAuthHandler(w, r)
 
-	resp, err := supa.Client.Auth.SignInWithProvider(supabase.ProviderSignInOptions{
-		Provider:   "google",
-		RedirectTo: appUrl + "/auth/callback",
-	})
-	if err != nil {
-		fmt.Println("err", err)
-		return err
-	}
+	// fmt.Println("GOOGLE HUHU")
+	// appUrl := os.Getenv("APP_URL")
+	//
+	// resp, err := supa.Client.Auth.SignInWithProvider(supabase.ProviderSignInOptions{
+	// 	Provider:   "google",
+	// 	RedirectTo: appUrl + "/auth/callback",
+	// })
+	// if err != nil {
+	// 	fmt.Println("err", err)
+	// 	return err
+	// }
 
-	hxRedirect(w, r, resp.URL)
+	// hxRedirect(w, r, resp.URL)
 	return nil
 }

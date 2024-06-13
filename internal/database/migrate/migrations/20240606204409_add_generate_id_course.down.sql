@@ -1,0 +1,2 @@
+ALTER TABLE public.courses
+ALTER COLUMN id uuid PRIMARY KEY;

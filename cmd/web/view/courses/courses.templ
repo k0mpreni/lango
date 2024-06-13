@@ -24,7 +24,9 @@ templ CourseLayout(title string, opts layoutOpts) {
 				}
 			</div>
 			<div class="flex flex-col items-center" id="courses">
-				{ children... }
+				<div class="py-10 sm:py-16 mx-auto px-4 sm:px-6 lg:px-8 bg-base-200">
+					{ children... }
+				</div>
 			</div>
 		</section>
 	}
@@ -39,9 +41,7 @@ templ CoursesList(courses []domain.Course) {
 						<input
 							type="radio"
 							name="my-accordion-2"
-							if i == 0 {
-								checked="checked"
-							}
+							checked?={ i==0 }
 						/>
 						<div class="collapse-title font-medium">
 							<div>
@@ -79,78 +79,94 @@ type CourseFormErrors struct {
 	Description string
 	Student     string
 	Date        string
+	Create      string
 }
 
 type CourseForm struct {
 	Title        string
 	Description  string
 	StudentEmail string
-	Date         time.Time
+	Date         string
+	Success      string
+}
+
+templ CreateCoursePage(course CourseForm, errors CourseFormErrors) {
+	@CourseLayout("Create Course", layoutOpts{backBtn: true}) {
+		@CreateCourse(course, errors)
+	}
 }
 
 templ CreateCourse(course CourseForm, errors CourseFormErrors) {
-	@CourseLayout("Create Course", layoutOpts{backBtn: true}) {
-		<div class="py-10 sm:py-16 mx-auto px-4 sm:px-6 lg:px-8 bg-base-200">
-			<form hx-post="/course/create">
-				<label class="form-control w-full">
-					<div class="label">
-						<span class="label-text">Email</span>
-					</div>
-					<input type="text" name="title" value={ course.Title } required placeholder="Mathematics 101" class="input input-bordered w-full"/>
-					if len(errors.Title) > 0 {
-						<div class="label">
-							<span class="label-text-alt text-error">{ errors.Title }</span>
-						</div>
-					}
-				</label>
-				<label class="form-control w-full">
-					<div class="label">
-						<span class="label-text">Description</span>
-					</div>
-					<textarea name="description" value={ course.Description } required placeholder="Description of the course" class="textarea textarea-bordered textarea-lg w-full max-w-xs"></textarea>
-					if len(errors.Description) > 0 {
-						<div class="label">
-							<span class="label-text-alt text-error">{ errors.Description }</span>
-						</div>
-					}
-				</label>
-				<label class="form-control w-full">
-					<div class="label">
-						<span class="label-text">Student Email</span>
-					</div>
-					<input type="email" name="student" value={ course.StudentEmail } required placeholder="Student Email" class="input input-bordered w-full"/>
-					if len(errors.Student) > 0 {
-						<div class="label">
-							<span class="label-text-alt text-error">{ errors.Student }</span>
-						</div>
-					}
-				</label>
-				<label class="form-control w-full">
-					<div class="label">
-						<span class="label-text">Date</span>
-					</div>
-					<input type="date" name="date" value={ course.Date.Format("2006-01-02") } required placeholder="Mathematics 101" min={ time.Now().Format("2006-01-02") } class="input input-bordered w-full"/>
-					if len(errors.Date) > 0 {
-						<div class="label">
-							<span class="label-text-alt text-error">{ errors.Date }</span>
-						</div>
-					}
-				</label>
-				<button type="submit" class="w-full btn btn-primary">Create</button>
-			</form>
-		</div>
-	}
+	<form
+		hx-post="/courses/create"
+		hx-swap="outerHTML scroll:top"
+		class="flex flex-col gap-2"
+	>
+		<label class="form-control w-full">
+			<div class="label">
+				<span class="label-text">Email</span>
+			</div>
+			<input type="text" name="title" value={ course.Title } required placeholder="Mathematics 101" class="input input-bordered w-full"/>
+			if len(errors.Title) > 0 {
+				<div class="label">
+					<span class="label-text-alt text-error">{ errors.Title }</span>
+				</div>
+			}
+		</label>
+		<label class="form-control w-full">
+			<div class="label">
+				<span class="label-text">Description</span>
+			</div>
+			<textarea name="description" value={ course.Description } required placeholder="Description of the course" class="textarea textarea-bordered textarea-lg w-full max-w-xs"></textarea>
+			if len(errors.Description) > 0 {
+				<div class="label">
+					<span class="label-text-alt text-error">{ errors.Description }</span>
+				</div>
+			}
+		</label>
+		<label class="form-control w-full">
+			<div class="label">
+				<span class="label-text">Student Email</span>
+			</div>
+			<input type="email" name="student-email" value={ course.StudentEmail } required placeholder="Student Email" class="input input-bordered w-full"/>
+			if len(errors.Student) > 0 {
+				<div class="label">
+					<span class="label-text-alt text-error">{ errors.Student }</span>
+				</div>
+			}
+		</label>
+		<label class="form-control w-full">
+			<div class="label">
+				<span class="label-text">Date</span>
+			</div>
+			<input type="date" name="date" value={ course.Date } required placeholder="Mathematics 101" min={ time.Now().Format("2006-01-02") } class="input input-bordered w-full"/>
+			if len(errors.Date) > 0 {
+				<div class="label">
+					<span class="label-text-alt text-error">{ errors.Date }</span>
+				</div>
+			}
+		</label>
+		<button type="submit" class="w-full btn btn-primary mt-8">Create</button>
+		if len(errors.Create) > 0 {
+			<div class="label">
+				<span class="label-text-alt text-error">{ errors.Create }</span>
+			</div>
+		}
+		if len(course.Success) > 0 {
+			<div class="label">
+				<span class="label-text-alt text-success">{ course.Success }</span>
+			</div>
+		}
+	</form>
 }
 
 templ JoinCourse(course domain.Course) {
 	@CourseLayout("Join Course", layoutOpts{backBtn: true, createBtn: true}) {
-		<div class="py-10 sm:py-16 mx-auto px-4 sm:px-6 lg:px-8 bg-base-200">
-			<h1 class="text-2xl">{ course.Title }</h1>
-			<div>
-				<p>{ course.Id.String() }</p>
-				<p>{ course.Description }</p>
-				<p>{ course.Date.Format("1 Jan 2006 at 15h4") }</p>
-			</div>
+		<h1 class="text-2xl">{ course.Title }</h1>
+		<div>
+			<p>{ course.Id.String() }</p>
+			<p>{ course.Description }</p>
+			<p>{ course.Date.Format("1 Jan 2006 at 15h4") }</p>
 		</div>
 	}
 }

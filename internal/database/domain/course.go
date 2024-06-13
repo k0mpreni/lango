@@ -77,7 +77,7 @@ func (m *CourseModel) GetById(id uuid.UUID) (*Course, error) {
 	return &course, nil
 }
 
-func (m *CourseModel) GetAllByTeacher(user *User) (*[]Course, error) {
+func (m *CourseModel) GetAllByTeacher(id uuid.UUID) (*[]Course, error) {
 	query := `SELECT * FROM courses WHERE teacher_id = $1;`
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
@@ -85,7 +85,7 @@ func (m *CourseModel) GetAllByTeacher(user *User) (*[]Course, error) {
 
 	var courses []Course
 
-	rows, err := m.DB.QueryContext(ctx, query, user.Id)
+	rows, err := m.DB.QueryContext(ctx, query, id)
 	if err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
@@ -96,22 +96,34 @@ func (m *CourseModel) GetAllByTeacher(user *User) (*[]Course, error) {
 	}
 
 	for rows.Next() {
-		err = rows.Scan(&courses)
+		var course Course
+		err = rows.Scan(
+			&course.Id,
+			&course.CreatedAt,
+			&course.TeacherId,
+			&course.StudentId,
+			&course.Title,
+			&course.Description,
+			&course.Date,
+			&course.Completed,
+			&course.Canceled,
+		)
 		if err != nil {
 			log.Fatalf("Failed to retrieve row because %s", err)
 		}
+		courses = append(courses, course)
 	}
 	return &courses, nil
 }
 
-func (m *CourseModel) GetAllByStudent(user *User) (*[]Course, error) {
+func (m *CourseModel) GetAllByStudent(id uuid.UUID) (*[]Course, error) {
 	query := `SELECT * FROM courses WHERE student_id = $1;`
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
 	var courses []Course
-	rows, err := m.DB.QueryContext(ctx, query, user.Id)
+	rows, err := m.DB.QueryContext(ctx, query, id)
 	if err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
