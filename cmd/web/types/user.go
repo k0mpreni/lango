@@ -8,6 +8,7 @@ type AuthenticatedUser struct {
 	Email       string
 	LoggedIn    bool
 	AccessToken string
+	Provider    string
 }
 
 type UserContextKey string

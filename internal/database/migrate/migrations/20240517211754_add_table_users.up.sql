@@ -3,7 +3,11 @@ CREATE TABLE IF NOT EXISTS users (
   created_at timestamp(0)
   with
     time zone NOT NULL DEFAULT NOW (),
+    password_hash bytea,
+    activated bool NOT NULL,
+    version integer NOT NULL DEFAULT 1,
     email text UNIQUE NOT NULL,
-    user_id uuid,
+    provider text UNIQUE NOT NULL,
+    provider_id text UNIQUE,
     role smallint DEFAULT 1
 );

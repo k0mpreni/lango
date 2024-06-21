@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"lango/cmd/web/view/courses"
@@ -10,6 +12,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func CoursesHandler(w http.ResponseWriter, r *http.Request) error {
@@ -38,13 +41,14 @@ func CoursesHandler(w http.ResponseWriter, r *http.Request) error {
 	// }
 
 	u := getAuthenticatedUser(r)
-	user, err := database.DB.Users.GetById(u.ID)
+	ctx := context.Background()
+	user, err := database.DB.GetUserById(ctx, pgtype.UUID{Bytes: u.ID})
 	if err != nil {
 		fmt.Println("error get user courses", err)
 		return err
 	}
 
-	t, err := database.DB.Teachers.GetById(user.Id)
+	t, err := database.DB.GetTeacherByUserId(ctx, user.ID)
 	if err != nil {
 		fmt.Println("error getting teacher", err)
 		return err
@@ -52,13 +56,13 @@ func CoursesHandler(w http.ResponseWriter, r *http.Request) error {
 
 	fmt.Println(t)
 
-	c, err := database.DB.Courses.GetAllByTeacher(t.Id)
+	c, err := database.DB.ListCoursesByTeacherId(ctx, t.ID)
 	if err != nil {
 		fmt.Println("error courses", err)
 		return err
 	}
 
-	return render(r, w, courses.CoursesList(*c))
+	return render(r, w, courses.CoursesList(c))
 }
 
 func CoursesCreateHandler(w http.ResponseWriter, r *http.Request) error {
@@ -76,8 +80,10 @@ func CoursesCreatePostHandler(w http.ResponseWriter, r *http.Request) error {
 		Date:         r.FormValue("date"),
 	}
 
+	ctx := context.Background()
+
 	u := getAuthenticatedUser(r)
-	user, err := database.DB.Users.GetById(u.ID)
+	user, err := database.DB.GetUserById(ctx, pgtype.UUID{Bytes: u.ID})
 	if err != nil {
 		e := courses.CourseFormErrors{
 			Create: "Error finding user",
@@ -86,11 +92,11 @@ func CoursesCreatePostHandler(w http.ResponseWriter, r *http.Request) error {
 	}
 	fmt.Println(u)
 
-	teacher := domain.Teacher{UserId: user.Id}
+	teacher := domain.CreateTeacherParams{UserID: user.ID}
 	// TODO: Do a Get or create
-	t, err := database.DB.Teachers.GetById(user.Id)
-	if errors.Is(err, domain.ErrRecordNotFound) {
-		err := database.DB.Teachers.Create(&teacher)
+	t, err := database.DB.GetTeacherByUserId(ctx, user.ID)
+	if errors.Is(err, sql.ErrNoRows) {
+		_, err := database.DB.CreateTeacher(ctx, teacher)
 		if err != nil {
 			fmt.Println("error creating teacher account", err)
 			e := courses.CourseFormErrors{
@@ -100,7 +106,7 @@ func CoursesCreatePostHandler(w http.ResponseWriter, r *http.Request) error {
 		}
 	}
 
-	student, err := database.DB.Users.GetByEmail(c.StudentEmail)
+	student, err := database.DB.GetUserByEmail(ctx, c.StudentEmail)
 	if err != nil {
 		e := courses.CourseFormErrors{
 			Student: "Student does not exists",
@@ -118,16 +124,17 @@ func CoursesCreatePostHandler(w http.ResponseWriter, r *http.Request) error {
 
 	// s, err := database.DB.Users.GetById(u.ID)
 
-	course := domain.Course{
-		CreatedAt:   time.Now(),
-		TeacherId:   t.Id,
-		StudentId:   student.Id,
-		Title:       c.Title,
-		Description: c.Description,
-		Date:        courseDate,
+	course := domain.CreateCourseParams{
+		TeacherID:   pgtype.UUID{Bytes: t.ID.Bytes},
+		StudentID:   student.ID,
+		Title:       pgtype.Text{String: c.Title},
+		Description: pgtype.Text{String: c.Description},
+		Date: pgtype.Timestamptz{
+			Time: courseDate,
+		},
 	}
 
-	err = database.DB.Courses.Create(&course)
+	createdCourse, err := database.DB.CreateCourse(ctx, course)
 	if err != nil {
 		fmt.Println("error course creation", err)
 		// Show error for creating course
@@ -143,6 +150,7 @@ func CoursesCreatePostHandler(w http.ResponseWriter, r *http.Request) error {
 	}
 	e := courses.CourseFormErrors{}
 
+	fmt.Println("COURSE CREATED:", createdCourse)
 	return render(r, w, courses.CreateCourse(successForm, e))
 }
 
@@ -150,11 +158,13 @@ func CoursesJoinHandler(w http.ResponseWriter, r *http.Request) error {
 	courseIdParam := chi.URLParam(r, "courseId")
 	fmt.Println("Course ID PARAM", courseIdParam)
 	c := domain.Course{
-		Title:       "Mathematics 101",
-		Description: "You will learn the fundamentals of mathematics",
+		Title:       pgtype.Text{String: "Mathematics 101"},
+		Description: pgtype.Text{String: "You will learn the fundamentals of mathematics"},
 		Completed:   false,
 		Canceled:    false,
-		Date:        time.Now(),
+		Date: pgtype.Timestamptz{
+			Time: time.Now(),
+		},
 	}
 
 	return render(r, w, courses.JoinCourse(c))

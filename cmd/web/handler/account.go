@@ -1,13 +1,13 @@
 package handler
 
 import (
-	"lango/cmd/web/view"
+	"context"
 	"lango/cmd/web/view/account"
 	"lango/internal/database"
 	"lango/internal/database/domain"
-	"lango/internal/supa"
-	"log/slog"
 	"net/http"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 // func HelloWebHandler(w http.ResponseWriter, r *http.Request) {
@@ -27,12 +27,15 @@ import (
 
 func AccountHandler(w http.ResponseWriter, r *http.Request) error {
 	u := getAuthenticatedUser(r)
-	user, err := database.DB.Users.GetById(u.ID)
+	ctx := context.Background()
+	user, err := database.DB.GetUserById(ctx, pgtype.UUID{
+		Bytes: [16]byte(u.ID),
+	})
 	if err != nil {
 		return err
 	}
 
-	return render(r, w, account.Index(*user))
+	return render(r, w, account.Index(user))
 }
 
 func AccountPutHandler(w http.ResponseWriter, r *http.Request) error {
@@ -69,30 +72,31 @@ func AccountPutHandler(w http.ResponseWriter, r *http.Request) error {
 		)
 	}
 
-	u := view.AuthenticatedUser(r.Context())
+	// u := view.AuthenticatedUser(r.Context())
 
-	user, err := supa.Client.Auth.UpdateUser(
-		r.Context(),
-		u.AccessToken,
-		map[string]interface{}{"email": params.Email, "password": params.NewPassword},
-	)
-	if err != nil {
-		slog.Error("updating account error", "err", err)
-		return render(
-			r,
-			w,
-			account.AccountForm(domain.User{Email: params.Email}, account.AccountErrors{
-				CurrentPassword: "Impossible to update the account",
-			}),
-		)
+	// user, err := supa.Client.Auth.UpdateUser(
+	// 	r.Context(),
+	// 	u.AccessToken,
+	// 	map[string]interface{}{"email": params.Email, "password": params.NewPassword},
+	// )
+	// if err != nil {
+	// 	slog.Error("updating account error", "err", err)
+	// 	return render(
+	// 		r,
+	// 		w,
+	// 		account.AccountForm(domain.User{Email: params.Email}, account.AccountErrors{
+	// 			CurrentPassword: "Impossible to update the account",
+	// 		}),
+	// 	)
+	//
+	// }
 
-	}
-
-	return render(
-		r,
-		w,
-		account.AccountForm(domain.User{Email: user.Email}, account.AccountErrors{}),
-	)
+	// return render(
+	// 	r,
+	// 	w,
+	// 	account.AccountForm(domain.User{Email: user.Email}, account.AccountErrors{}),
+	// )
+	return nil
 }
 
 func AccountDeleteHandler(w http.ResponseWriter, r *http.Request) error {

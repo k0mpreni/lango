@@ -4,13 +4,11 @@ import (
 	"context"
 	"fmt"
 	"lango/cmd/web/types"
-	"lango/internal/supa"
+	"lango/internal/auth"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/gorilla/sessions"
 )
 
 func WithUser(next http.Handler) http.Handler {
@@ -20,8 +18,7 @@ func WithUser(next http.Handler) http.Handler {
 			return
 		}
 
-		store := sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY")))
-		session, err := store.Get(r, "user")
+		session, err := auth.SessionStore.Get(r, SessionUserKey)
 		if err != nil {
 			fmt.Println("err getting session", err)
 			next.ServeHTTP(w, r)
@@ -29,33 +26,26 @@ func WithUser(next http.Handler) http.Handler {
 		}
 
 		accessToken := session.Values["accessToken"]
-		if accessToken == nil {
-			next.ServeHTTP(w, r)
-			return
-		}
+		email := session.Values["email"]
+		userId := uuid.UUID{}
 
 		at, _ := accessToken.(string)
-
-		resp, err := supa.Client.Auth.User(r.Context(), at)
-		if err != nil {
-			fmt.Println("err auth user:", err, resp)
-			store := sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY")))
-			session, _ := store.Get(r, "user")
-			session.Values["accessToken"] = ""
-			session.Save(r, w)
-
+		userEmail, _ := email.(string)
+		if accessToken == nil || email == nil || len(userEmail) < 1 {
 			next.ServeHTTP(w, r)
 			return
 		}
 
-		user := types.AuthenticatedUser{
-			ID:          uuid.MustParse(resp.ID),
-			Email:       resp.Email,
+		// Check if user is logged in
+		// TODO: Check if valid user
+		u := types.AuthenticatedUser{
+			ID:          userId,
+			Email:       userEmail,
 			LoggedIn:    true,
-			AccessToken: accessToken.(string),
+			AccessToken: at,
 		}
 
-		ctx := context.WithValue(r.Context(), types.UserKey, user)
+		ctx := context.WithValue(r.Context(), types.UserKey, u)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	}
 	return http.HandlerFunc(fn)

@@ -2,7 +2,6 @@ package server
 
 import (
 	"encoding/json"
-	"fmt"
 	"lango/cmd/web"
 	"lango/cmd/web/handler"
 	"log"
@@ -10,7 +9,6 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/markbates/goth/gothic"
 )
 
 const (
@@ -25,7 +23,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	r.Use(middleware.Logger)
 	r.Use(handler.WithUser)
 
-	r.Get("/health", s.healthHandler)
+	// r.Get("/health", s.healthHandler)
 
 	fileServer := http.FileServer(http.FS(web.Files))
 	r.Handle("/assets/*", fileServer)
@@ -58,24 +56,24 @@ func (s *Server) RegisterRoutes() http.Handler {
 	r.Post("/signup", handler.Make(handler.SignUpCreateHandler))
 
 	r.Get("/auth/provider/{provider}", handler.Make(handler.LoginWithProviderHandler))
-	// r.Post("/logout", handler.Make(handler.LogoutHandler))
-	r.Get("/logout/{provider}", func(res http.ResponseWriter, req *http.Request) {
-		gothic.Logout(res, req)
-		res.Header().Set("Location", "/")
-		res.WriteHeader(http.StatusTemporaryRedirect)
-	})
+	r.Get("/logout", handler.Make(handler.LogoutHandler))
+	// r.Get("/logout/", func(res http.ResponseWriter, req *http.Request) {
+	// 	gothic.Logout(res, req)
+	// 	res.Header().Set("Location", "/")
+	// 	res.WriteHeader(http.StatusTemporaryRedirect)
+	// })
 
-	// r.Get("/auth/callback", handler.Make(handler.AuthCallbackHandler))
-	r.Get("/auth/{provider}/callback", func(res http.ResponseWriter, req *http.Request) {
-		fmt.Println("CALLBACK")
-		user, err := gothic.CompleteUserAuth(res, req)
-		if err != nil {
-			fmt.Fprintln(res, err)
-			return
-		}
-		fmt.Println("AUTH CALLBACK", user)
-		http.Redirect(res, req, "http://localhost:8080", http.StatusFound)
-	})
+	r.Get("/auth/{provider}/callback", handler.Make(handler.AuthCallbackHandler))
+	// r.Get("/auth/{provider}/callback", func(res http.ResponseWriter, req *http.Request) {
+	// 	fmt.Println("CALLBACK")
+	// 	user, err := gothic.CompleteUserAuth(res, req)
+	// 	if err != nil {
+	// 		fmt.Fprintln(res, err)
+	// 		return
+	// 	}
+	// 	fmt.Println("AUTH CALLBACK", user)
+	// 	http.Redirect(res, req, "http://localhost:8080", http.StatusFound)
+	// })
 
 	r.Get("/pricing", handler.Make(handler.HandlePricingIndex))
 
@@ -109,7 +107,5 @@ func (s *Server) HelloWorldHandler(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write(jsonResp)
 }
 
-func (s *Server) healthHandler(w http.ResponseWriter, r *http.Request) {
-	jsonResp, _ := json.Marshal(s.db.App.Health())
-	_, _ = w.Write(jsonResp)
-}
+// func (s *Server) healthHandler(w http.ResponseWriter, r *http.Request) {
+// }

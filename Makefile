@@ -6,12 +6,14 @@ all: build
 install:
 	@echo "Installing..."
 	cd ./cmd/web && npm i && cd ../.. 
+	@echo "Done installing..."
 
 build:
 	@echo "Building..."
 	cd ./cmd/web && npm run css && cd ../.. 
 	@templ generate
 	@go build -o main cmd/api/main.go
+	@echo "Done building..."
 
 # Run the application
 run:
@@ -80,6 +82,14 @@ down: ## Database migration up
 
 migration:
 		@migrate create -ext sql -dir internal/database/migrate/migrations $(filter-out $@,$(MAKECMDGOALS))
+
+generate-sql: ## Database migration up
+	@echo "Generating DB..."
+	cd ./internal/database 	
+	@sqlc generate
+	cd ../.. 
+	@echo "Done generating DB..."
+
 
 
 .PHONY: all build run test clean

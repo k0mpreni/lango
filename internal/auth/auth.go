@@ -16,10 +16,11 @@ type Session struct {
 }
 
 const (
-	// TODO: replace this
 	MaxAge = 86400 * 30
 	IsProd = false
 )
+
+var SessionStore *sessions.CookieStore
 
 func NewAuth() {
 	err := godotenv.Load()
@@ -27,14 +28,13 @@ func NewAuth() {
 		log.Fatal("Error loading .env file")
 	}
 
-	store := sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY")))
-	store.MaxAge(MaxAge)
-	store.Options.Path = "/"
-	store.Options.Domain = "/"
-	store.Options.HttpOnly = true
-	store.Options.Secure = IsProd
+	SessionStore = sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY")))
+	SessionStore.Options.MaxAge = MaxAge
+	SessionStore.Options.Path = "/"
+	SessionStore.Options.HttpOnly = true
+	SessionStore.Options.Secure = IsProd
 
-	gothic.Store = store
+	gothic.Store = SessionStore
 	goth.UseProviders(
 		google.New(
 			os.Getenv("GOOGLE_KEY"),

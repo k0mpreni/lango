@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"lango/internal/auth"
 	"lango/internal/database"
-	"lango/internal/database/domain"
 	"net/http"
 	"os"
 	"strconv"
@@ -15,8 +14,6 @@ import (
 
 type Server struct {
 	port int
-
-	db *domain.Models
 }
 
 var CurrentServer Server
@@ -31,7 +28,6 @@ func NewServer() *http.Server {
 
 	CurrentServer = Server{
 		port: port,
-		db:   database.DB,
 	}
 
 	// Declare Server config

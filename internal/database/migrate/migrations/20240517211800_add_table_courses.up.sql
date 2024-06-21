@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS courses (
-  id uuid PRIMARY KEY,
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid (),
   created_at timestamp(0)
   with
     time zone NOT NULL DEFAULT NOW (),

@@ -45,18 +45,18 @@ templ CoursesList(courses []domain.Course) {
 						/>
 						<div class="collapse-title font-medium">
 							<div>
-								<h2 class="text-xl">{ course.Title }</h2>
-								<h3>Course date: { course.Date.Format("1 Jan 2006 at 15h4") } </h3>
+								<h2 class="text-xl">{ course.Title.String }</h2>
+								<h3>Course date: { course.Date.Time.Format("1 Jan 2006 at 15h4") } </h3>
 							</div>
 						</div>
 						<div class="collapse-content">
-							<p>{ course.Description } </p>
+							<p>{ course.Description.String } </p>
 							if course.Completed {
 								<button disabled class="btn btn-disabled" title="Finished course">Finished</button>
 							} else if course.Canceled {
 								<button disabled class="btn btn-disabled" title="Course Canceled">Canceled</button>
 							} else {
-								<a href={ templ.URL("/courses/join/" + course.Id.String()) } class="btn btn-accent" title="Join">Join</a>
+								<a href={ templ.URL("/courses/join/" + string(course.ID.Bytes[:])) } class="btn btn-accent" title="Join">Join</a>
 							}
 						</div>
 					</div>
@@ -162,11 +162,11 @@ templ CreateCourse(course CourseForm, errors CourseFormErrors) {
 
 templ JoinCourse(course domain.Course) {
 	@CourseLayout("Join Course", layoutOpts{backBtn: true, createBtn: true}) {
-		<h1 class="text-2xl">{ course.Title }</h1>
+		<h1 class="text-2xl">{ course.Title.String }</h1>
 		<div>
-			<p>{ course.Id.String() }</p>
-			<p>{ course.Description }</p>
-			<p>{ course.Date.Format("1 Jan 2006 at 15h4") }</p>
+			<p>{ string(course.ID.Bytes[:]) }</p>
+			<p>{ course.Description.String }</p>
+			<p>{ course.Date.Time.Format("1 Jan 2006 at 15h4") }</p>
 		</div>
 	}
 }
