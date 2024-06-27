@@ -16,47 +16,25 @@ import (
 )
 
 func CoursesHandler(w http.ResponseWriter, r *http.Request) error {
-	// mockCourses := []domain.Course{
-	// 	{
-	// 		Title:       "Mathematics 101",
-	// 		Description: "You will learn the fundamentals of mathematics",
-	// 		Completed:   false,
-	// 		Canceled:    false,
-	// 		Date:        time.Now(),
-	// 	},
-	// 	{
-	// 		Title:       "Computer Science 101",
-	// 		Description: "You will learn the fundamentals of computer science",
-	// 		Completed:   true,
-	// 		Canceled:    false,
-	// 		Date:        time.Now(),
-	// 	},
-	// 	{
-	// 		Title:       "Geology 101",
-	// 		Description: "Canceled because who wants to learn about rocks",
-	// 		Completed:   false,
-	// 		Canceled:    true,
-	// 		Date:        time.Now(),
-	// 	},
-	// }
+	var c []domain.Course
 
 	u := getAuthenticatedUser(r)
 	ctx := context.Background()
-	user, err := database.DB.GetUserById(ctx, pgtype.UUID{Bytes: u.ID})
+	user, err := database.DB.GetUserByEmail(ctx, u.Email)
 	if err != nil {
 		fmt.Println("error get user courses", err)
-		return err
+		hxRedirect(w, r, "/login")
 	}
 
 	t, err := database.DB.GetTeacherByUserId(ctx, user.ID)
 	if err != nil {
 		fmt.Println("error getting teacher", err)
-		return err
+		return render(r, w, courses.CoursesList(c))
 	}
 
 	fmt.Println(t)
 
-	c, err := database.DB.ListCoursesByTeacherId(ctx, t.ID)
+	c, err = database.DB.ListCoursesByTeacherId(ctx, t.ID)
 	if err != nil {
 		fmt.Println("error courses", err)
 		return err
@@ -83,7 +61,7 @@ func CoursesCreatePostHandler(w http.ResponseWriter, r *http.Request) error {
 	ctx := context.Background()
 
 	u := getAuthenticatedUser(r)
-	user, err := database.DB.GetUserById(ctx, pgtype.UUID{Bytes: u.ID})
+	user, err := database.DB.GetUserByEmail(ctx, u.Email)
 	if err != nil {
 		e := courses.CourseFormErrors{
 			Create: "Error finding user",

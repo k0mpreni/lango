@@ -11,11 +11,35 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const activateUser = `-- name: ActivateUser :one
+UPDATE users 
+SET activated = true
+WHERE email = $1
+RETURNING id, created_at, password_hash, activated, version, email, provider, provider_id, role
+`
+
+func (q *Queries) ActivateUser(ctx context.Context, email string) (User, error) {
+	row := q.db.QueryRow(ctx, activateUser, email)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.PasswordHash,
+		&i.Activated,
+		&i.Version,
+		&i.Email,
+		&i.Provider,
+		&i.ProviderID,
+		&i.Role,
+	)
+	return i, err
+}
+
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (
-  email, password_hash, provider, provider_id
+  email, password_hash, provider, provider_id, activated
 ) VALUES (
-  $1, $2, $3, $4
+  $1, $2, $3, $4, $5
 )
 RETURNING id, created_at, password_hash, activated, version, email, provider, provider_id, role
 `
@@ -25,6 +49,7 @@ type CreateUserParams struct {
 	PasswordHash []byte
 	Provider     string
 	ProviderID   pgtype.Text
+	Activated    bool
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
@@ -33,6 +58,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		arg.PasswordHash,
 		arg.Provider,
 		arg.ProviderID,
+		arg.Activated,
 	)
 	var i User
 	err := row.Scan(

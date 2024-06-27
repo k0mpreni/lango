@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	_ "github.com/joho/godotenv/autoload"
 )
@@ -22,6 +22,10 @@ var (
 
 var DB *domain.Queries
 
+var pgPool *pgxpool.Pool
+
+type CancelConnection func() error
+
 func Init() error {
 	ctx := context.Background()
 	connStr := fmt.Sprintf(
@@ -33,16 +37,18 @@ func Init() error {
 		database,
 	)
 
-	conn, err := pgx.Connect(ctx, connStr)
+	dbpool, err := pgxpool.New(ctx, connStr)
 	if err != nil {
 		log.Fatal("err", err)
 		return err
 	}
-	defer conn.Close(ctx)
 
-	queries := domain.New(conn)
+	queries := domain.New(dbpool)
 
-	// m := domain.NewModels(db)
 	DB = queries
 	return nil
+}
+
+func Close() {
+	pgPool.Close()
 }

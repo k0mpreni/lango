@@ -2,12 +2,11 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"lango/cmd/web/view/account"
 	"lango/internal/database"
 	"lango/internal/database/domain"
 	"net/http"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 // func HelloWebHandler(w http.ResponseWriter, r *http.Request) {
@@ -28,9 +27,7 @@ import (
 func AccountHandler(w http.ResponseWriter, r *http.Request) error {
 	u := getAuthenticatedUser(r)
 	ctx := context.Background()
-	user, err := database.DB.GetUserById(ctx, pgtype.UUID{
-		Bytes: [16]byte(u.ID),
-	})
+	user, err := database.DB.GetUserByEmail(ctx, u.Email)
 	if err != nil {
 		return err
 	}
@@ -100,5 +97,15 @@ func AccountPutHandler(w http.ResponseWriter, r *http.Request) error {
 }
 
 func AccountDeleteHandler(w http.ResponseWriter, r *http.Request) error {
-	return render(r, w, account.AccountDeleted())
+	fmt.Println("DELETE")
+	u := getAuthenticatedUser(r)
+	ctx := context.Background()
+	user, err := database.DB.GetUserByEmail(ctx, u.Email)
+	if err != nil {
+		return err
+	}
+
+	database.DB.DeleteUser(ctx, user.ID)
+	hxRedirect(w, r, "/")
+	return nil
 }

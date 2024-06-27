@@ -5,10 +5,9 @@ import (
 	"fmt"
 	"lango/cmd/web/types"
 	"lango/internal/auth"
+	"lango/internal/database"
 	"net/http"
 	"strings"
-
-	"github.com/google/uuid"
 )
 
 func WithUser(next http.Handler) http.Handler {
@@ -25,27 +24,32 @@ func WithUser(next http.Handler) http.Handler {
 			return
 		}
 
-		accessToken := session.Values["accessToken"]
 		email := session.Values["email"]
-		userId := uuid.UUID{}
 
-		at, _ := accessToken.(string)
 		userEmail, _ := email.(string)
-		if accessToken == nil || email == nil || len(userEmail) < 1 {
+
+		fmt.Println("userEmail", userEmail)
+
+		if email == nil || len(userEmail) < 1 {
 			next.ServeHTTP(w, r)
 			return
 		}
 
-		// Check if user is logged in
-		// TODO: Check if valid user
-		u := types.AuthenticatedUser{
-			ID:          userId,
-			Email:       userEmail,
-			LoggedIn:    true,
-			AccessToken: at,
+		ctx := context.Background()
+		user, err := database.DB.GetUserByEmail(ctx, userEmail)
+		if err != nil {
+			fmt.Println("Invalid user")
+			next.ServeHTTP(w, r)
+			return
 		}
 
-		ctx := context.WithValue(r.Context(), types.UserKey, u)
+		u := types.AuthenticatedUser{
+			ID:       user.ID.Bytes,
+			Email:    user.Email,
+			LoggedIn: true,
+		}
+
+		ctx = context.WithValue(r.Context(), types.UserKey, u)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	}
 	return http.HandlerFunc(fn)

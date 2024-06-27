@@ -9,18 +9,31 @@ import (
 	internalAuth "lango/internal/auth"
 	"lango/internal/database"
 	"lango/internal/database/domain"
+	"lango/internal/mail"
+	"log/slog"
 	"net/http"
 
 	"github.com/badoux/checkmail"
 	"github.com/go-chi/chi/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/markbates/goth/gothic"
 	"github.com/nedpals/supabase-go"
+	"golang.org/x/crypto/bcrypt"
 )
 
 const (
-	SessionUserKey        = "user"
-	sessionAccessTokenKey = "accesToken"
+	SessionUserKey = "user"
 )
+
+func HashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	return string(bytes), err
+}
+
+func CheckPasswordHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
+}
 
 func SignupGetHandler(w http.ResponseWriter, r *http.Request) error {
 	return render(r, w, auth.SignUpForm(auth.SignupParams{}, auth.SignUpErrors{}))
@@ -55,24 +68,61 @@ func SignUpCreateHandler(w http.ResponseWriter, r *http.Request) error {
 		}))
 	}
 
-	// _, err = supa.Client.Auth.SignUp(r.Context(), supabase.UserCredentials{
-	// 	Email:    params.Email,
-	// 	Password: params.Password,
-	// })
-	// if err != nil {
-	// 	switch err.Error() {
-	// 	case "User already registered":
-	// 		return render(r, w, auth.EmailSent(params.Email, auth.LoginErrors{Email: err.Error()}))
-	// 	default:
-	// 		return err
-	// 	}
-	// }
+	passHash, err := HashPassword(params.Password)
+	if err != nil {
+		return render(r, w, auth.SignUpForm(params, auth.SignUpErrors{
+			Password: "A problem happened, please try again",
+		}))
+	}
 
-	return render(r, w, auth.EmailSent(params.Email, auth.LoginErrors{}))
+	ctx := context.Background()
+	user, err := database.DB.CreateUser(ctx, domain.CreateUserParams{
+		Activated:    false,
+		Email:        params.Email,
+		PasswordHash: []byte(passHash),
+		Provider:     "email",
+		ProviderID:   pgtype.Text{},
+	})
+	if err != nil {
+		return render(r, w, auth.SignUpForm(params, auth.SignUpErrors{
+			Password: "A problem happened, please try again",
+		}))
+	}
+
+	mail.SendEmail(params.Email)
+
+	return render(r, w, auth.EmailSent(user.Email, auth.LoginErrors{}))
 }
 
 func LoginGetHandler(w http.ResponseWriter, r *http.Request) error {
-	return render(r, w, auth.LoginForm(supabase.UserCredentials{}, auth.LoginErrors{}))
+	return render(r, w, auth.LoginForm(auth.LoginCredentials{}, auth.LoginErrors{}))
+}
+
+func LoginActivateEmailHandler(w http.ResponseWriter, r *http.Request) error {
+	token := chi.URLParam(r, "token")
+	fmt.Println("TOKEN ACTIVATION", token)
+
+	ctx := context.Background()
+
+	user, err := database.DB.ActivateUser(ctx, "alex.labonne@pm.me")
+	if err != nil {
+		return render(
+			r,
+			w,
+			auth.LoginForm(
+				auth.LoginCredentials{},
+				auth.LoginErrors{InvalidCredentials: "Something went wrong"},
+			),
+		)
+	}
+
+	if err := setAuthSession(w, r, user); err != nil {
+		fmt.Println("Error activating user", err)
+		return err
+	}
+
+	hxRedirect(w, r, "/")
+	return nil
 }
 
 func PasswordResetHandler(w http.ResponseWriter, r *http.Request) error {
@@ -101,20 +151,18 @@ func PasswordResetPostHandler(w http.ResponseWriter, r *http.Request) error {
 }
 
 func LoginOtherMethodsHandler(w http.ResponseWriter, r *http.Request) error {
-	return render(r, w, auth.LoginForm(supabase.UserCredentials{}, auth.LoginErrors{}))
+	return render(r, w, auth.LoginForm(auth.LoginCredentials{}, auth.LoginErrors{}))
 }
 
 func MagicLinkGetHandler(w http.ResponseWriter, r *http.Request) error {
 	// TODO: Render full page
-	return render(r, w, auth.LoginMagicLinkForm(supabase.UserCredentials{}, auth.LoginErrors{}))
+	return render(r, w, auth.LoginMagicLinkForm(auth.LoginCredentials{}, auth.LoginErrors{}))
 }
 
 func MagicLinkCreateHandler(w http.ResponseWriter, r *http.Request) error {
-	credentials := supabase.UserCredentials{
-		Email: r.FormValue("email"),
-	}
+	credentials := auth.LoginCredentials{Email: r.FormValue("email")}
 
-	// err := supa.Client.Auth.SendMagicLink(r.Context(), credentials.Email)
+	// HANDLE MAGIC LINK
 	// if err != nil {
 	// 	fmt.Println(err)
 	// 	slog.Error("error sending magic link", "err", err)
@@ -124,39 +172,46 @@ func MagicLinkCreateHandler(w http.ResponseWriter, r *http.Request) error {
 }
 
 func LoginPostHandler(w http.ResponseWriter, r *http.Request) error {
-	// credentials := supabase.UserCredentials{
-	// 	Email:    r.FormValue("email"),
-	// 	Password: r.FormValue("password"),
-	// }
+	ctx := context.Background()
+	credentials := auth.LoginCredentials{
+		Email:    r.FormValue("email"),
+		Password: r.FormValue("password"),
+	}
 
-	// err := checkmail.ValidateFormat(credentials.Email)
-	// if err != nil {
-	// 	return render(r, w, auth.LoginForm(credentials, auth.LoginErrors{
-	// 		Email: "Please enter a valid email",
-	// 	}))
-	// }
+	err := checkmail.ValidateFormat(credentials.Email)
+	if err != nil {
+		return render(r, w, auth.LoginForm(credentials, auth.LoginErrors{
+			Email: "Please enter a valid email",
+		}))
+	}
 
 	// TODO: Check for an email validation util or create one
-	// if len(credentials.Password) < 8 {
-	// 	return render(r, w, auth.LoginForm(credentials, auth.LoginErrors{
-	// 		Password: "Password must be longer than 8 characters",
-	// 	}))
-	// }
+	if len(credentials.Password) < 8 {
+		return render(r, w, auth.LoginForm(credentials, auth.LoginErrors{
+			Password: "Password must be longer than 8 characters",
+		}))
+	}
 
-	// call supabase
-	// resp, err := supa.Client.Auth.SignIn(r.Context(), credentials)
-	// if err != nil {
-	// 	slog.Error("login error", "err", err)
-	// 	return render(r, w, auth.LoginForm(credentials, auth.LoginErrors{
-	// 		InvalidCredentials: "Please enter valid credentials",
-	// 	}))
-	//
-	// }
-	//
-	// if err := setAuthSession(w, r, resp.AccessToken); err != nil {
-	// 	fmt.Println("login post handler", err)
-	// 	return err
-	// }
+	user, err := database.DB.GetUserByEmail(ctx, credentials.Email)
+	if err != nil {
+		slog.Error("login error", "err", err)
+		return render(r, w, auth.LoginForm(credentials, auth.LoginErrors{
+			InvalidCredentials: "Please enter valid credentials",
+		}))
+	}
+
+	if isValid := CheckPasswordHash(credentials.Password, string(user.PasswordHash)); !isValid {
+		slog.Error("login error invalid password", "email", user.Email)
+		return render(r, w, auth.LoginForm(credentials, auth.LoginErrors{
+			InvalidCredentials: "Please enter valid credentials",
+		}))
+
+	}
+
+	if err := setAuthSession(w, r, user); err != nil {
+		fmt.Println("login post handler", err)
+		return err
+	}
 
 	hxRedirect(w, r, "/")
 	return nil
@@ -171,26 +226,31 @@ func AuthCallbackHandler(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
+	var newUser domain.CreateUserParams
+	var u domain.User
+
 	ctx := context.Background()
-	u, err := database.DB.GetUserByEmail(ctx, user.Email)
+	u, err = database.DB.GetUserByEmail(ctx, user.Email)
 	if err != nil {
-		fmt.Println("ERRRR", err.Error(), u, err == sql.ErrNoRows)
+		fmt.Println("ERROR", err.Error(), u, err == sql.ErrNoRows)
 	}
 
-	newUser := domain.CreateUserParams{
-		Email:        u.Email,
-		Provider:     u.Provider,
-		ProviderID:   u.ProviderID,
-		PasswordHash: []byte{},
+	if len(u.Email) == 0 {
+		newUser = domain.CreateUserParams{
+			Email:        user.Email,
+			Provider:     user.Provider,
+			ProviderID:   pgtype.Text{},
+			PasswordHash: []byte{},
+			Activated:    true,
+		}
+
+		u, err = database.DB.CreateUser(ctx, newUser)
+		if err != nil {
+			fmt.Println("ERROR creating user", err)
+		}
 	}
 
-	createdUser, err := database.DB.CreateUser(ctx, newUser)
-	if err != nil {
-		fmt.Println("ERRRR creating user", err)
-	}
-	fmt.Println(createdUser)
-
-	if err := setAuthSession(w, r, createdUser); err != nil {
+	if err := setAuthSession(w, r, u); err != nil {
 		return err
 	}
 
@@ -202,9 +262,10 @@ func AuthCallbackHandler(w http.ResponseWriter, r *http.Request) error {
 func setAuthSession(w http.ResponseWriter, r *http.Request, user domain.User) error {
 	session, err := internalAuth.SessionStore.Get(r, SessionUserKey)
 	session.Values["email"] = user.Email
-	session.Values["userId"] = user.ID
+	session.Values["userId"] = string(user.ID.Bytes[:])
 
 	if err != nil {
+		fmt.Println("ERR SETTING SESSION", err)
 		return err
 	}
 
@@ -225,7 +286,6 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) error {
 
 	session, _ := internalAuth.SessionStore.Get(r, SessionUserKey)
 	ctx := context.WithValue(r.Context(), types.UserKey, u)
-	session.Values["accessToken"] = ""
 	session.Values["email"] = ""
 	session.Values["userId"] = ""
 	session.Save(r, w)

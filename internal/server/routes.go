@@ -31,6 +31,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	r.Get("/", handler.Make(handler.HomeHandler))
 
 	r.Get("/login", handler.Make(handler.LoginGetHandler))
+	r.Get("/login/activate", handler.Make(handler.LoginActivateEmailHandler))
 	r.Post("/login", handler.Make(handler.LoginPostHandler))
 
 	r.Get("/login/password-reset", handler.Make(handler.PasswordResetHandler))
@@ -82,7 +83,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 		chiRouter.Use(handler.WithAuth)
 		chiRouter.Get("/account", handler.Make(handler.AccountHandler))
 		chiRouter.Put("/account", handler.Make(handler.AccountPutHandler))
-		chiRouter.Post("/account/delete", handler.Make(handler.AccountDeleteHandler))
+		chiRouter.Delete("/account", handler.Make(handler.AccountDeleteHandler))
 
 		chiRouter.Get("/courses", handler.Make(handler.CoursesHandler))
 

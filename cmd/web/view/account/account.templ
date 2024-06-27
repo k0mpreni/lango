@@ -19,7 +19,11 @@ templ Index(user domain.User) {
 					<div class="max-w-md w-full bg-base-300 p-10 rounded-xl">
 						<h1 class="text-2xl">Account settings</h1>
 						<!-- <p>{ user.ContactInfos }</p> -->
-						@AccountForm(user, AccountErrors{})
+						if user.Provider != "email" {
+							@AccountFormWithProvider(user)
+						} else {
+							@AccountForm(user, AccountErrors{})
+						}
 					</div>
 				</div>
 			</div>
@@ -38,7 +42,7 @@ templ AccountForm(user domain.User, errors AccountErrors) {
 				<div class="label">
 					<span class="label-text">Email</span>
 				</div>
-				<input type="email" disabled name="email" value={ user.Email } required placeholder="tutu@toto.com" class="input input-bordered w-full"/>
+				<input type="email" disabled name="email" value={ user.Email } required placeholder="email@lango.com" class="input input-bordered w-full"/>
 				if len(errors.Email) > 0 {
 					<div class="label">
 						<span class="label-text-alt text-error">{ errors.Email }</span>
@@ -80,6 +84,18 @@ templ AccountForm(user domain.User, errors AccountErrors) {
 		hx-confirm="Are you sure you want to delete your account?"
 		class="w-full btn btn-outline btn-secondary"
 	>Delete account</button>
+}
+
+templ AccountFormWithProvider(user domain.User) {
+	<div class="flex flex-col gap-8 mt-8">
+		<h2 class="text-xl">Logged in with { user.Provider } </h2>
+		<input type="email" disabled name="email" value={ user.Email } required placeholder="email@lango.com" class="input input-bordered w-full"/>
+		<button
+			hx-delete="/account"
+			hx-confirm="Are you sure you want to delete your account?"
+			class="w-full btn btn-outline btn-secondary"
+		>Delete account</button>
+	</div>
 }
 
 templ AccountDeleted() {

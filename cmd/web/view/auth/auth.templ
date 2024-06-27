@@ -2,9 +2,19 @@ package auth
 
 import (
 	"lango/cmd/web/view/layout"
-	"github.com/nedpals/supabase-go"
 	"lango/cmd/web/view/partials"
 )
+
+type LoginCredentials struct {
+	Email    string
+	Password string
+}
+
+type LoginErrors struct {
+	Email              string
+	Password           string
+	InvalidCredentials string
+}
 
 templ EmailSent(email string, errors LoginErrors) {
 	<div>
@@ -42,7 +52,7 @@ templ Login() {
 	}
 }
 
-templ LoginMagicLinkForm(creds supabase.UserCredentials, errors LoginErrors) {
+templ LoginMagicLinkForm(creds LoginCredentials, errors LoginErrors) {
 	@Login() {
 		<form
 			hx-post="/login-magic-link"
@@ -53,7 +63,7 @@ templ LoginMagicLinkForm(creds supabase.UserCredentials, errors LoginErrors) {
 					<div class="label">
 						<span class="label-text">Email</span>
 					</div>
-					<input type="email" name="email" value={ creds.Email } required placeholder="tutu@toto.com" class="input input-bordered w-full"/>
+					<input type="email" name="email" value={ creds.Email } required placeholder="email@lango.com" class="input input-bordered w-full"/>
 					if len(errors.Email) > 0 {
 						<div class="label">
 							<span class="label-text-alt text-error">{ errors.Email }</span>
@@ -72,13 +82,7 @@ templ LoginMagicLinkForm(creds supabase.UserCredentials, errors LoginErrors) {
 	}
 }
 
-type LoginErrors struct {
-	Email              string
-	Password           string
-	InvalidCredentials string
-}
-
-templ LoginForm(creds supabase.UserCredentials, errors LoginErrors) {
+templ LoginForm(creds LoginCredentials, errors LoginErrors) {
 	@Login() {
 		<form hx-post="/login">
 			<div class="space-y-4 flex flex-col justify-center">
@@ -86,7 +90,7 @@ templ LoginForm(creds supabase.UserCredentials, errors LoginErrors) {
 					<div class="label">
 						<span class="label-text">Email</span>
 					</div>
-					<input type="email" name="email" value={ creds.Email } required placeholder="tutu@toto.com" class="input input-bordered w-full"/>
+					<input type="email" name="email" value={ creds.Email } required placeholder="email@lango.com" class="input input-bordered w-full"/>
 					if len(errors.Email) > 0 {
 						<div class="label">
 							<span class="label-text-alt text-error">{ errors.Email }</span>
@@ -166,7 +170,7 @@ templ SignUpForm(params SignupParams, errors SignUpErrors) {
 					<div class="label">
 						<span class="label-text">Email</span>
 					</div>
-					<input type="email" name="email" value={ params.Email } required placeholder="tutu@toto.com" class="input input-bordered w-full"/>
+					<input type="email" name="email" value={ params.Email } required placeholder="email@lango.com" class="input input-bordered w-full"/>
 					if len(errors.Email) > 0 {
 						<div class="label">
 							<span class="label-text-alt text-error">{ errors.Email }</span>
