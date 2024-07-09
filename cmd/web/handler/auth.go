@@ -23,6 +23,7 @@ import (
 
 const (
 	SessionUserKey = "user"
+	ProviderKey    = "provider"
 )
 
 func HashPassword(password string) (string, error) {
@@ -219,7 +220,7 @@ func LoginPostHandler(w http.ResponseWriter, r *http.Request) error {
 
 func AuthCallbackHandler(w http.ResponseWriter, r *http.Request) error {
 	provider := chi.URLParam(r, "provider")
-	r = r.WithContext(context.WithValue(context.Background(), "provider", provider))
+	r = r.WithContext(context.WithValue(context.Background(), ProviderKey, provider))
 	user, err := gothic.CompleteUserAuth(w, r)
 	if err != nil {
 		fmt.Fprintln(w, err)
@@ -239,7 +240,7 @@ func AuthCallbackHandler(w http.ResponseWriter, r *http.Request) error {
 		newUser = domain.CreateUserParams{
 			Email:        user.Email,
 			Provider:     user.Provider,
-			ProviderID:   pgtype.Text{},
+			ProviderID:   pgtype.Text{String: user.UserID, Valid: true},
 			PasswordHash: []byte{},
 			Activated:    true,
 		}
@@ -278,7 +279,7 @@ func setAuthSession(w http.ResponseWriter, r *http.Request, user domain.User) er
 
 func LogoutHandler(w http.ResponseWriter, r *http.Request) error {
 	provider := chi.URLParam(r, "provider")
-	r = r.WithContext(context.WithValue(context.Background(), "provider", provider))
+	r = r.WithContext(context.WithValue(context.Background(), ProviderKey, provider))
 
 	u := types.AuthenticatedUser{
 		LoggedIn: false,
@@ -300,7 +301,7 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) error {
 
 func LoginWithProviderHandler(w http.ResponseWriter, r *http.Request) error {
 	provider := chi.URLParam(r, "provider")
-	r = r.WithContext(context.WithValue(context.Background(), "provider", provider))
+	r = r.WithContext(context.WithValue(context.Background(), ProviderKey, provider))
 	gothic.BeginAuthHandler(w, r)
 
 	return nil
