@@ -31,7 +31,7 @@ docker-run:
 		: ; \
 	else \
 		echo "Falling back to Docker Compose V1"; \
-		docker-compose up; \
+		docker compose up; \
 	fi
 
 # Shutdown DB container
@@ -40,7 +40,7 @@ docker-down:
 		: ; \
 	else \
 		echo "Falling back to Docker Compose V1"; \
-		docker-compose down; \
+		docker compose down; \
 	fi
 
 # Test the application
@@ -61,7 +61,7 @@ watch:
 	else \
 	    read -p "Go's 'air' is not installed on your machine. Do you want to install it? [Y/n] " choice; \
 	    if [ "$$choice" != "n" ] && [ "$$choice" != "N" ]; then \
-	        go install github.com/cosmtrek/air@latest; \
+	        go install github.com/air-verse/air@latest; \
 	        air; \
 	        echo "Watching...";\
 	    else \
