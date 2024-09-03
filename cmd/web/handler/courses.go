@@ -2,7 +2,6 @@ package handler
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"lango/cmd/web/view/courses"
@@ -12,6 +11,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -31,8 +31,6 @@ func CoursesHandler(w http.ResponseWriter, r *http.Request) error {
 		fmt.Println("error getting teacher", err)
 		return render(r, w, courses.CoursesList(c))
 	}
-
-	fmt.Println(t)
 
 	c, err = database.DB.ListCoursesByTeacherId(ctx, t.ID)
 	if err != nil {
@@ -57,6 +55,7 @@ func CoursesCreatePostHandler(w http.ResponseWriter, r *http.Request) error {
 		StudentEmail: r.FormValue("student-email"),
 		Date:         r.FormValue("date"),
 	}
+	fmt.Println("COURSE FORM", c)
 
 	ctx := context.Background()
 
@@ -73,8 +72,8 @@ func CoursesCreatePostHandler(w http.ResponseWriter, r *http.Request) error {
 	teacher := domain.CreateTeacherParams{UserID: user.ID}
 	// TODO: Do a Get or create
 	t, err := database.DB.GetTeacherByUserId(ctx, user.ID)
-	if errors.Is(err, sql.ErrNoRows) {
-		_, err := database.DB.CreateTeacher(ctx, teacher)
+	if errors.Is(err, pgx.ErrNoRows) {
+		t, err = database.DB.CreateTeacher(ctx, teacher)
 		if err != nil {
 			fmt.Println("error creating teacher account", err)
 			e := courses.CourseFormErrors{
@@ -100,15 +99,14 @@ func CoursesCreatePostHandler(w http.ResponseWriter, r *http.Request) error {
 		return render(r, w, courses.CreateCourse(c, e))
 	}
 
-	// s, err := database.DB.Users.GetById(u.ID)
-
 	course := domain.CreateCourseParams{
-		TeacherID:   pgtype.UUID{Bytes: t.ID.Bytes},
+		TeacherID:   t.ID,
 		StudentID:   student.ID,
-		Title:       pgtype.Text{String: c.Title},
-		Description: pgtype.Text{String: c.Description},
+		Title:       pgtype.Text{String: c.Title, Valid: true},
+		Description: pgtype.Text{String: c.Description, Valid: true},
 		Date: pgtype.Timestamptz{
-			Time: courseDate,
+			Valid: true,
+			Time:  courseDate,
 		},
 	}
 

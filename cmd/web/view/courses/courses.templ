@@ -28,6 +28,10 @@ templ CourseLayout(title string, opts layoutOpts) {
 					{ children... }
 				</div>
 			</div>
+			<p>TODO: IF OWNER, POSSIBILITY TO EDIT</p>
+			<button>EDIT</button>
+			<button>cancel</button>
+			<button>reschedule</buton>
 		</section>
 	}
 }
@@ -36,28 +40,21 @@ templ CoursesList(courses []domain.Course) {
 	@CourseLayout("Courses", layoutOpts{createBtn: true}) {
 		if len(courses) > 0 {
 			<div class="gap-2 flex flex-wrap items-center justify-center">
-				for i, course := range courses {
-					<div class="collapse collapse-arrow bg-base-100">
-						<input
-							type="radio"
-							name="my-accordion-2"
-							checked?={ i==0 }
-						/>
-						<div class="collapse-title font-medium">
-							<div>
-								<h2 class="text-xl">{ course.Title.String }</h2>
-								<h3>Course date: { course.Date.Time.Format("1 Jan 2006 at 15h4") } </h3>
-							</div>
-						</div>
-						<div class="collapse-content">
+				for _, course := range courses {
+					<div class="card bg-neutral text-neutral-content w-96">
+						<div class="card-body">
+							<h2 class="card-title">{ course.Title.String }</h2>
+							<h3>Course date: { course.Date.Time.Format("1 Jan 2006 at 15h4") } </h3>
 							<p>{ course.Description.String } </p>
-							if course.Completed {
-								<button disabled class="btn btn-disabled" title="Finished course">Finished</button>
-							} else if course.Canceled {
-								<button disabled class="btn btn-disabled" title="Course Canceled">Canceled</button>
-							} else {
-								<a href={ templ.URL("/courses/join/" + string(course.ID.Bytes[:])) } class="btn btn-accent" title="Join">Join</a>
-							}
+							<div class="card-actions justify-end">
+								if course.Completed {
+									<button disabled class="btn btn-disabled" title="Completed course">Completed</button>
+								} else if course.Canceled {
+									<button disabled class="btn btn-disabled" title="Course Canceled">Canceled</button>
+								} else {
+									<a href={ templ.URL("/courses/join/" + string(course.ID.Bytes[:])) } class="btn btn-accent" title="Join">Join</a>
+								}
+							</div>
 						</div>
 					</div>
 				}
