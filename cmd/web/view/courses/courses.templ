@@ -28,10 +28,6 @@ templ CourseLayout(title string, opts layoutOpts) {
 					{ children... }
 				</div>
 			</div>
-			<p>TODO: IF OWNER, POSSIBILITY TO EDIT</p>
-			<button>EDIT</button>
-			<button>cancel</button>
-			<button>reschedule</buton>
 		</section>
 	}
 }
@@ -46,13 +42,17 @@ templ CoursesList(courses []domain.Course) {
 							<h2 class="card-title">{ course.Title.String }</h2>
 							<h3>Course date: { course.Date.Time.Format("1 Jan 2006 at 15h4") } </h3>
 							<p>{ course.Description.String } </p>
-							<div class="card-actions justify-end">
+							<div class="card-actions justify-between">
 								if course.Completed {
 									<button disabled class="btn btn-disabled" title="Completed course">Completed</button>
 								} else if course.Canceled {
 									<button disabled class="btn btn-disabled" title="Course Canceled">Canceled</button>
 								} else {
-									<a href={ templ.URL("/courses/join/" + string(course.ID.Bytes[:])) } class="btn btn-accent" title="Join">Join</a>
+									<div>
+										<button class="btn btn-neutral">EDIT</button>
+										<button class="btn btn-error">CANCEL</button>
+									</div>
+									<a href={ templ.URL("/courses/" + string(course.ID.Bytes[:])) } class="btn btn-accent" title="Join">Join</a>
 								}
 							</div>
 						</div>

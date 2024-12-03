@@ -132,7 +132,10 @@ func CoursesCreatePostHandler(w http.ResponseWriter, r *http.Request) error {
 
 func CoursesJoinHandler(w http.ResponseWriter, r *http.Request) error {
 	courseIdParam := chi.URLParam(r, "courseId")
-	fmt.Println("Course ID PARAM", courseIdParam)
+	fmt.Println("TUTU Course ID PARAM", courseIdParam)
+	// ctx := context.Background()
+
+	// course, err := database.DB.GetCourse(ctx, courseIdParam)
 	c := domain.Course{
 		Title:       pgtype.Text{String: "Mathematics 101"},
 		Description: pgtype.Text{String: "You will learn the fundamentals of mathematics"},

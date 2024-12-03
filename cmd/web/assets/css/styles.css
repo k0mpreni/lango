@@ -1397,8 +1397,16 @@ html {
     --btn-color: var(--fallback-a);
   }
 
+  .btn-neutral {
+    --btn-color: var(--fallback-n);
+  }
+
   .btn-success {
     --btn-color: var(--fallback-su);
+  }
+
+  .btn-error {
+    --btn-color: var(--fallback-er);
   }
 }
 
@@ -1464,8 +1472,16 @@ html {
     --btn-color: var(--a);
   }
 
+  .btn-neutral {
+    --btn-color: var(--n);
+  }
+
   .btn-success {
     --btn-color: var(--su);
+  }
+
+  .btn-error {
+    --btn-color: var(--er);
   }
 }
 
@@ -1481,10 +1497,22 @@ html {
   outline-color: var(--fallback-a,oklch(var(--a)/1));
 }
 
+.btn-neutral {
+  --tw-text-opacity: 1;
+  color: var(--fallback-nc,oklch(var(--nc)/var(--tw-text-opacity)));
+  outline-color: var(--fallback-n,oklch(var(--n)/1));
+}
+
 .btn-success {
   --tw-text-opacity: 1;
   color: var(--fallback-suc,oklch(var(--suc)/var(--tw-text-opacity)));
   outline-color: var(--fallback-su,oklch(var(--su)/1));
+}
+
+.btn-error {
+  --tw-text-opacity: 1;
+  color: var(--fallback-erc,oklch(var(--erc)/var(--tw-text-opacity)));
+  outline-color: var(--fallback-er,oklch(var(--er)/1));
 }
 
 .btn.glass {
@@ -2464,10 +2492,6 @@ html {
 
 .items-center {
   align-items: center;
-}
-
-.justify-end {
-  justify-content: flex-end;
 }
 
 .justify-center {

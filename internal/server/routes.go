@@ -90,7 +90,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 		chiRouter.Get("/courses/create", handler.Make(handler.CoursesCreateHandler))
 		chiRouter.Post("/courses/create", handler.Make(handler.CoursesCreatePostHandler))
 
-		chiRouter.Get("/courses/join/{courseId}", handler.Make(handler.CoursesJoinHandler))
+		chiRouter.Get("/courses/{courseId}", handler.Make(handler.CoursesJoinHandler))
 	})
 
 	return r
